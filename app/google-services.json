@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "168725178075",
+    "project_id": "freelancer-407b2",
+    "storage_bucket": "freelancer-407b2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168725178075:android:681b43b00e40b7da278efe",
+        "android_client_info": {
+          "package_name": "de.mreuter.freelancer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "168725178075-7qmiar5bkohs3v1mdbvnd0r1u8gqqq78.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.mreuter.freelancer",
+            "certificate_hash": "c9ff09164f8a84744de989c521dde3cb73de3383"
+          }
+        },
+        {
+          "client_id": "168725178075-6tfmac6gcpld85l2031uihjbvbddk76r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhOUsKzccllJNuyPK46le6jr-TJdpFdXk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "168725178075-6tfmac6gcpld85l2031uihjbvbddk76r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
