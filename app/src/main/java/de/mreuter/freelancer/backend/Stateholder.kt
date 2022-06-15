@@ -29,4 +29,10 @@ class Stateholder{
     fun getProjects() = companyService.getProjects(usersCompany()?.uuid ?: throw RuntimeException("Company should not be null"))
 
     fun getMaintenances() = companyService.getMaintenances(usersCompany()?.uuid ?: throw RuntimeException("Company should not be null"))
+
+    fun getCompanyByID(id: UUID) = companyService.findByID(id)
+
+    fun saveCompany(company: Company){
+        companyService.save(company)
+    }
 }

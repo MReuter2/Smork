@@ -27,6 +27,8 @@ import androidx.navigation.NavController
 import de.mreuter.freelancer.*
 import de.mreuter.freelancer.backend.*
 import de.mreuter.freelancer.ui.elements.ClickableListItem
+import de.mreuter.freelancer.ui.navigation.NEW_PROJECT
+import de.mreuter.freelancer.ui.navigation.PROJECTS
 import de.mreuter.freelancer.ui.rememberExposedMenuStateHolder
 import de.mreuter.freelancer.ui.theme.*
 import java.util.*

@@ -9,62 +9,61 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import de.mreuter.freelancer.BottomBar
-import de.mreuter.freelancer.PROJECTS
 import de.mreuter.freelancer.TopBar
+import de.mreuter.freelancer.backend.Maintenance
+import de.mreuter.freelancer.backend.Project
+import de.mreuter.freelancer.backend.exampleClients
+import de.mreuter.freelancer.backend.exampleProjects
 import de.mreuter.freelancer.stateHolder
-import de.mreuter.freelancer.ui.elements.BasicListItem
-import de.mreuter.freelancer.ui.elements.ClickableListItem
+import de.mreuter.freelancer.ui.elements.*
+import de.mreuter.freelancer.ui.navigation.BottomNavigationBar
+import de.mreuter.freelancer.ui.navigation.PROJECTS
 import de.mreuter.freelancer.ui.theme.FreelancerTheme
 import de.mreuter.freelancer.ui.theme.Typography
+import java.util.*
 
 @Composable
-fun Home(navController: NavController?) {
-    Scaffold(
-        topBar = { TopBar() },
-        bottomBar = { BottomBar() }
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .wrapContentWidth(align = Alignment.CenterHorizontally)
-                .padding(horizontal = 40.dp)
-        ) {
-            item {
+fun Home(
+    navController: NavController?,
+    activeProjects: List<Project>,
+    activeMaintenances: List<Maintenance>
+) {
+    BasicScaffoldWithLazyColumn(navController = navController) {
+        Spacer(modifier = Modifier.padding(10.dp))
+        BasicCard {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Text(text = "Active Projects", style = Typography.h2)
                 Spacer(modifier = Modifier.padding(10.dp))
-                Card(
-                    modifier = Modifier.padding(vertical = 20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 20.dp)
+                activeProjects.forEach {
+                    ClickableListItem(
+                        it.name,
+                        "${it.client.fullname}"
                     ) {
-                        Text(text = "Active Projects", style = Typography.h2)
-                        Spacer(modifier = Modifier.padding(10.dp))
-                        stateHolder.getProjects().forEach {
-                            if (!it.isFinished) ClickableListItem(
-                                it.name,
-                                "${it.client.fullname}"
-                            ) {
-                                navController?.navigate(PROJECTS)
-                            }
-                        }
+                        navController?.navigate(PROJECTS)
                     }
+                    if (it != activeProjects.last())
+                        BasicDivider()
                 }
-
-                Card(
-                    modifier = Modifier.padding(vertical = 20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 20.dp)
-                    ) {
-                        Text(
-                            text = "Next Maintenances",
-                            style = Typography.h2,
-                            modifier = Modifier.padding(top = 15.dp)
-                        )
-                        Spacer(modifier = Modifier.padding(10.dp))
-                        stateHolder.getMaintenances()
-                            .forEach { if (!it.isFinished) BasicListItem(topic = "${it.date}", description = it.description) }
-                    }
+            }
+        }
+        BasicCard {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Text(
+                    text = "Next Maintenances",
+                    style = Typography.h2
+                )
+                Spacer(modifier = Modifier.padding(10.dp))
+                activeMaintenances.forEach {
+                    BasicListItem(
+                        topic = "${it.date.day}.${it.date.month}.${it.date.year}",
+                        description = it.description
+                    )
+                    if (activeMaintenances.last() != it)
+                        BasicDivider()
                 }
             }
         }
@@ -73,8 +72,8 @@ fun Home(navController: NavController?) {
 
 @Composable
 @Preview
-fun HomePreview(){
+fun HomePreview() {
     FreelancerTheme {
-        Home(null)
+        Home(null, exampleProjects, listOf(Maintenance(exampleClients[0], "Ma", Date(2022, 6, 20))))
     }
 }

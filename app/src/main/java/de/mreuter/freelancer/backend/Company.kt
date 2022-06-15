@@ -138,6 +138,8 @@ class CompanyService(val companyRepository: CompanyRepository, val projectServic
 
     fun getMaintenances(companyID: UUID) = findByID(companyID)?.maintenances ?: throw RuntimeException("Dont know a company with ID: $companyID")
 
+    fun save(company: Company) = companyRepository.save(company)
+
     fun findByID(companyID: UUID) = companyRepository.findByID(companyID)
 
     fun findByPersonID(personID: UUID) = companyRepository.findByUserID(personID)

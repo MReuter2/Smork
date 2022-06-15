@@ -18,7 +18,9 @@ import de.mreuter.freelancer.*
 import de.mreuter.freelancer.backend.Owner
 import de.mreuter.freelancer.backend.TestData
 import de.mreuter.freelancer.backend.Worker
+import de.mreuter.freelancer.ui.elements.BasicCard
 import de.mreuter.freelancer.ui.elements.ClickableListItem
+import de.mreuter.freelancer.ui.navigation.*
 import de.mreuter.freelancer.ui.theme.FreelancerTheme
 import de.mreuter.freelancer.ui.theme.Typography
 
@@ -26,55 +28,60 @@ import de.mreuter.freelancer.ui.theme.Typography
 fun YourCompany(navController: NavController? = null){
     Scaffold(
         topBar = { TopBar() },
-        bottomBar = { BottomBar() },
+        bottomBar = {
+        },
         content = {
             LazyColumn(
                 modifier = Modifier
                     .wrapContentWidth(align = Alignment.CenterHorizontally)
-                    .padding(horizontal = 40.dp)
             ) {
                 item {
-                    Column(
-                        modifier = Modifier.padding(vertical = 40.dp)
-                    ) {
-                        Text(
-                            text = "Your Company GmbH",
-                            style = Typography.h1,
-                        )
-                        Spacer(modifier = Modifier.padding(2.dp))
-                        Text(
-                            text = "Your company description",
-                            style = Typography.subtitle2,
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.padding(10.dp))
-                    Text(
-                        text = "Owner",
-                        style = Typography.subtitle1,
-                        modifier = Modifier.padding(vertical = 5.dp)
-                    )
-                    Card {
-                        stateHolder.getOwner().forEach { owner ->
-                            ClickableListItem(clickableText = "${owner.fullName}", action = {
-                                navController?.navigate(OWNER_PROFILE(owner.uuid, false))
-                            })
+                    BasicCard{
+                        Column(
+                            modifier = Modifier.padding(14.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 0.dp)
+                            ) {
+                                Text(
+                                    text = "Your Company GmbH",
+                                    style = Typography.h1,
+                                )
+                                Spacer(modifier = Modifier.padding(2.dp))
+                                Text(
+                                    text = "Your company description",
+                                    style = Typography.subtitle2,
+                                    modifier = Modifier.padding(horizontal = 5.dp)
+                                )
+                            }
+                            Text(
+                                text = "Owner",
+                                style = Typography.subtitle1,
+                                modifier = Modifier.padding(top = 25.dp, bottom = 10.dp)
+                            )
+                            stateHolder.getOwner().forEach { owner ->
+                                ClickableListItem(
+                                    clickableText = "${owner.fullName}",
+                                    action = {
+                                        navController?.navigate(OWNER_PROFILE(owner.uuid, false))
+                                    }
+                                )
+                            }
+                            Text(
+                                text = "Worker",
+                                style = Typography.subtitle1,
+                                modifier = Modifier.padding(top = 25.dp, bottom = 10.dp)
+                            )
+                                stateHolder.getWorker().forEach { worker ->
+                                    ClickableListItem(
+                                        clickableText = "${worker.fullName}",
+                                        action = {
+                                            navController?.navigate(WORKER_PROFILE(worker.uuid, false))
+                                        })
+                                }
+                            Spacer(modifier = Modifier.padding(0.dp))
                         }
                     }
-                    Spacer(modifier = Modifier.padding(10.dp))
-                    Text(
-                        text = "Worker",
-                        style = Typography.subtitle1,
-                        modifier = Modifier.padding(vertical = 5.dp)
-                    )
-                    Card{
-                        stateHolder.getWorker().forEach { worker ->
-                            ClickableListItem(clickableText = "${worker.fullName}", action = {
-                                navController?.navigate(WORKER_PROFILE(worker.uuid, false))
-                            })
-                        }
-                    }
-                    Spacer(modifier = Modifier.padding(50.dp))
                 }
             }
         }

@@ -27,6 +27,8 @@ import de.mreuter.freelancer.backend.Client
 import de.mreuter.freelancer.backend.Fullname
 import de.mreuter.freelancer.backend.exampleClients
 import de.mreuter.freelancer.ui.elements.ClickableListItem
+import de.mreuter.freelancer.ui.navigation.CLIENTS
+import de.mreuter.freelancer.ui.navigation.CLIENT_PROFILE
 import de.mreuter.freelancer.ui.theme.*
 
 

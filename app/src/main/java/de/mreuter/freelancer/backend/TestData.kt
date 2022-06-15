@@ -1,5 +1,8 @@
 package de.mreuter.freelancer.backend
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+
 val exampleCompanies = mutableListOf<Company>(
     Company("Hermann Josef Reuter GmbH", "Heizungssanitär"),
     Company("Example Company", "Example Work")
@@ -36,5 +39,14 @@ val exampleWorker = mutableListOf<Worker>(
 class TestData {
     init {
         exampleCompanies[0].addOwner(exampleOwner[0])
+        exampleCompanies[0].addWorker(exampleWorker[0])
+        exampleCompanies[0].addWorker(exampleWorker[1])
+        exampleCompanies[0].addWorker(exampleWorker[2])
     }
+}
+
+@Composable
+@Preview
+fun TestApp(){
+
 }
