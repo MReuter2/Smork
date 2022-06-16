@@ -154,7 +154,7 @@ fun NavigationHost(navController: NavHostController){
             }
         }*/
         composable(PROJECTS){
-            Projects(navController)
+            Projects(navController, stateHolder.getProjects())
         }
         composable(NEW_PROJECT(null),
             arguments = listOf(
@@ -164,7 +164,7 @@ fun NavigationHost(navController: NavHostController){
             )
         ){
             val clientID = UUID.fromString(it.arguments?.getString("clientID"))
-            NewProject(navController = navController, clientID)
+            NewProject(navController = navController, clientID, stateHolder.getClients())
         }
     }
 }

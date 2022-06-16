@@ -31,41 +31,41 @@ fun Home(
     BasicScaffoldWithLazyColumn(navController = navController) {
         Spacer(modifier = Modifier.padding(10.dp))
         BasicCard {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
                 Text(text = "Active Projects", style = Typography.h2)
-                Spacer(modifier = Modifier.padding(10.dp))
-                activeProjects.forEach {
-                    ClickableListItem(
-                        it.name,
-                        "${it.client.fullname}"
-                    ) {
-                        navController?.navigate(PROJECTS)
+                Spacer(modifier = Modifier.padding(5.dp))
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    activeProjects.forEach {
+                        ClickableListItem(
+                            it.name,
+                            "${it.client.fullname}"
+                        ) {
+                            navController?.navigate(PROJECTS)
+                        }
+                        if (it != activeProjects.last())
+                            BasicDivider()
                     }
-                    if (it != activeProjects.last())
-                        BasicDivider()
                 }
-            }
         }
         BasicCard {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
                 Text(
                     text = "Next Maintenances",
                     style = Typography.h2
                 )
-                Spacer(modifier = Modifier.padding(10.dp))
-                activeMaintenances.forEach {
-                    BasicListItem(
-                        topic = "${it.date.day}.${it.date.month}.${it.date.year}",
-                        description = it.description
-                    )
-                    if (activeMaintenances.last() != it)
-                        BasicDivider()
+                Spacer(modifier = Modifier.padding(5.dp))
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    activeMaintenances.forEach {
+                        BasicListItem(
+                            topic = "${it.date.day}.${it.date.month}.${it.date.year}",
+                            description = it.description
+                        )
+                        if (activeMaintenances.last() != it)
+                            BasicDivider()
+                    }
                 }
-            }
         }
     }
 }

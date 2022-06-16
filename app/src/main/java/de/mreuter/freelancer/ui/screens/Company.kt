@@ -37,12 +37,7 @@ fun YourCompany(navController: NavController? = null){
             ) {
                 item {
                     BasicCard{
-                        Column(
-                            modifier = Modifier.padding(14.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(vertical = 0.dp)
-                            ) {
+                            Column {
                                 Text(
                                     text = "Your Company GmbH",
                                     style = Typography.h1,
@@ -80,7 +75,6 @@ fun YourCompany(navController: NavController? = null){
                                         })
                                 }
                             Spacer(modifier = Modifier.padding(0.dp))
-                        }
                     }
                 }
             }

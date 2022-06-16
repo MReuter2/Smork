@@ -12,6 +12,10 @@ data class Client(
     private val projects = mutableListOf<Project>()
     private val maintenances = mutableListOf<Maintenance>()
 
+    override fun toString(): String {
+        return fullname.toString()
+    }
+
     fun addProject(project: Project){
         projects.add(project)
     }
