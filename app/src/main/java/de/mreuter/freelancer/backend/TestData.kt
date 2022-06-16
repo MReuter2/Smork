@@ -42,6 +42,11 @@ class TestData {
         exampleCompanies[0].addWorker(exampleWorker[0])
         exampleCompanies[0].addWorker(exampleWorker[1])
         exampleCompanies[0].addWorker(exampleWorker[2])
+
+        exampleProjects[0].addTask(Task("Cleaning Bathroom"))
+        exampleProjects[0].addTask(Task("Installing Toilet"))
+        exampleProjects[0].addTask(Task("Testing Toilet"))
+        exampleProjects[0].addTask(Task("Inspecting door"))
     }
 }
 

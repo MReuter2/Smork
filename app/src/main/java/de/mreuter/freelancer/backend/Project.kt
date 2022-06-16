@@ -20,18 +20,6 @@ class Project(var name: String, val client: Client, val tasks: MutableList<Task>
         }
     }
 
-    fun markTask(task: Task){
-        if(!tasks.contains(task)){
-            throw RuntimeException("This task is not inside the tasklist")
-        }else{
-            if(task.isFinished){
-                task.refinish()
-            }else {
-                task.finish()
-            }
-        }
-    }
-
     fun addTask(task: Task){
         tasks.add(task)
     }
@@ -52,12 +40,6 @@ class Project(var name: String, val client: Client, val tasks: MutableList<Task>
 class ProjectService(val projectRepository: ProjectRepository){
 
     /*TODO:Image Upload*/
-
-    fun markTask(projectId: UUID, task: Task){
-        val project = findByID(projectId)
-        project.markTask(task)
-        save(project)
-    }
 
     fun addTask(projectId: UUID, task: Task){
         val project = findByID(projectId)

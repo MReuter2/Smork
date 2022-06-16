@@ -34,10 +34,6 @@ class Task(val taskDescription: String){
         return super.equals(other)
     }
 
-    fun finish(){
-        isFinished = true
-    }
-
     fun refinish(){
         isFinished = false
     }

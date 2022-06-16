@@ -56,7 +56,7 @@ fun Projects(navController: NavController? = null, projects: List<Project>) {
                     modifier = Modifier.then(Modifier.size(25.dp))
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Add,
+                        painter = painterResource(id = R.drawable.ic_outline_add_24),
                         contentDescription = null
                     )
                 }
@@ -111,18 +111,118 @@ fun Projects(navController: NavController? = null, projects: List<Project>) {
 
 @Composable
 fun Project(project: Project) {
+    val timePeriodExpanded = remember { mutableStateOf(false) }
     BasicScaffoldWithLazyColumn(navController = null) {
         BasicCard {
-
+            Text(
+                text = project.name,
+                style = Typography.h2
+            )
+            Text(
+                text = project.client.toString(),
+                style = Typography.subtitle2,
+                modifier = Modifier.padding(1.dp)
+            )
         }
 
         BasicCard {
-
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
+            ) {
+                Text(text = "Time period", style = Typography.h2)
+                IconButton(
+                    onClick = { timePeriodExpanded.value = !timePeriodExpanded.value },
+                    modifier = Modifier.then(Modifier.size(25.dp))
+                ) {
+                    if(timePeriodExpanded.value)
+                        Icon(painter = painterResource(id = R.drawable.ic_baseline_expand_more_24), contentDescription = null)
+                    else
+                        Icon(painter = painterResource(id = R.drawable.ic_baseline_expand_less_24), contentDescription = null)
+                }
+            }
+            /*TODO: Datum der Projekte (Datepicker und im backend überarbeiten)*/
+            /*TODO: Expandable Card*/
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 6.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(text = "Start date")
+                Text(text = project.startDate.toString())
+            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 0.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(text = "End date")
+                Text(text = "22.01.2022")
+            }
         }
 
         BasicCard {
-
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                Text(text = "Tasks", style = Typography.h2)
+                IconButton(
+                    onClick = { timePeriodExpanded.value = !timePeriodExpanded.value },
+                    modifier = Modifier.then(Modifier.size(25.dp))
+                ) {
+                    if(timePeriodExpanded.value)
+                        Icon(painter = painterResource(id = R.drawable.ic_baseline_expand_more_24), contentDescription = null)
+                    else
+                        Icon(painter = painterResource(id = R.drawable.ic_baseline_expand_less_24), contentDescription = null)
+                }
+            }
+            /*TODO: Datum der Projekte (Datepicker und im backend überarbeiten)*/
+            /*TODO: Expandable Card*/
+            project.tasks.forEach{
+                TaskRowWithCheckbox(task = it)
+                if(it != project.tasks.last())
+                    BasicDivider()
+            }
         }
+
+        BasicCard {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text(text = "Images", style = Typography.h2)
+                IconButton(onClick = { /*TODO*/ },
+                    modifier = Modifier.then(Modifier.size(25.dp))) {
+                    Icon(painter = painterResource(id = R.drawable.ic_baseline_chevron_right_24), contentDescription = null)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TaskRowWithCheckbox(task: Task){
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 0.dp)
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = task.taskDescription
+        )
+        Checkbox(checked = task.isFinished, onCheckedChange = {task.isFinished = !task.isFinished})
     }
 }
 
@@ -138,7 +238,6 @@ fun NewProject(
 
     val sortedClients = clients
         .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
-    val exposedMenuStateHolder = rememberExposedMenuStateHolder(sortedClients)
     val clientDropDown = DropDown(sortedClients)
 
     BasicScaffoldWithLazyColumn(navController = navController) {
@@ -222,6 +321,7 @@ fun TaskRow(task: Task) {
 @Preview
 @Composable
 fun PreviewProjects() {
+    TestData()
     FreelancerTheme {
         Projects(projects = exampleProjects)
     }
@@ -232,5 +332,13 @@ fun PreviewProjects() {
 fun PreviewNewProject() {
     FreelancerTheme {
         NewProject(clients = exampleClients)
+    }
+}
+
+@Preview
+@Composable
+fun PreviewProject(){
+    FreelancerTheme {
+        Project(project = exampleProjects[0])
     }
 }
