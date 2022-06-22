@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import de.mreuter.freelancer.ui.navigation.*
 import de.mreuter.freelancer.ui.theme.FreelancerTheme
 import de.mreuter.freelancer.ui.theme.Typography
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun YourCompany(navController: NavController? = null){
     Scaffold(

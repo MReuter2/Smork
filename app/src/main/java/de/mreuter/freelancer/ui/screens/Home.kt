@@ -22,6 +22,7 @@ import de.mreuter.freelancer.ui.theme.FreelancerTheme
 import de.mreuter.freelancer.ui.theme.Typography
 import java.util.*
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Home(
     navController: NavController?,

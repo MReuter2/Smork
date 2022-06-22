@@ -35,4 +35,10 @@ class Stateholder{
     fun saveCompany(company: Company){
         companyService.save(company)
     }
+
+    fun saveProject(project: Project){
+        projectService.save(project)
+    }
+
+    fun getProjectByID(projectID: UUID) = projectService.findByID(projectID)
 }

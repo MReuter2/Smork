@@ -1,11 +1,15 @@
 package de.mreuter.freelancer.ui.screens
 
+import android.os.Build
+import android.widget.TimePicker
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -17,6 +21,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,9 +33,11 @@ import de.mreuter.freelancer.R
 import de.mreuter.freelancer.backend.*
 import de.mreuter.freelancer.ui.elements.*
 import de.mreuter.freelancer.ui.navigation.NEW_PROJECT
+import de.mreuter.freelancer.ui.navigation.PROJECT
 import de.mreuter.freelancer.ui.navigation.PROJECTS
 import de.mreuter.freelancer.ui.rememberExposedMenuStateHolder
 import de.mreuter.freelancer.ui.theme.*
+import java.time.LocalDate
 import java.util.*
 
 @Composable
@@ -70,7 +77,7 @@ fun Projects(navController: NavController? = null, projects: List<Project>) {
                         project.name, "${project.client.fullname}"
                     ) {
                         navController?.navigate(
-                            PROJECTS
+                            PROJECT(project.uuid)
                         )
                     }
                     if (activeProjects.last() != project)
@@ -109,9 +116,11 @@ fun Projects(navController: NavController? = null, projects: List<Project>) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Project(project: Project) {
     val timePeriodExpanded = remember { mutableStateOf(false) }
+    val updatedProject = project
     BasicScaffoldWithLazyColumn(navController = null) {
         BasicCard {
             Text(
@@ -125,74 +134,36 @@ fun Project(project: Project) {
             )
         }
 
-        BasicCard {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp)
-            ) {
-                Text(text = "Time period", style = Typography.h2)
-                IconButton(
-                    onClick = { timePeriodExpanded.value = !timePeriodExpanded.value },
-                    modifier = Modifier.then(Modifier.size(25.dp))
-                ) {
-                    if(timePeriodExpanded.value)
-                        Icon(painter = painterResource(id = R.drawable.ic_baseline_expand_more_24), contentDescription = null)
-                    else
-                        Icon(painter = painterResource(id = R.drawable.ic_baseline_expand_less_24), contentDescription = null)
-                }
-            }
             /*TODO: Datum der Projekte (Datepicker und im backend überarbeiten)*/
             /*TODO: Expandable Card*/
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 6.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(text = "Start date")
-                Text(text = project.startDate.toString())
-            }
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 0.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(text = "End date")
-                Text(text = "22.01.2022")
-            }
-        }
+            ExpandableCard(title = "Time period"){
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 6.dp)
+                        .fillMaxWidth()
+                ) {
+                    var startDate = LocalDate.now()
+                    Text(text = "Start date")
+                    ClickableText(
+                        text = AnnotatedString(project.startDate.toString()),
+                        onClick = {
 
-        BasicCard {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ) {
-                Text(text = "Tasks", style = Typography.h2)
-                IconButton(
-                    onClick = { timePeriodExpanded.value = !timePeriodExpanded.value },
-                    modifier = Modifier.then(Modifier.size(25.dp))
+                        })
+                }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 0.dp)
+                        .fillMaxWidth()
                 ) {
-                    if(timePeriodExpanded.value)
-                        Icon(painter = painterResource(id = R.drawable.ic_baseline_expand_more_24), contentDescription = null)
-                    else
-                        Icon(painter = painterResource(id = R.drawable.ic_baseline_expand_less_24), contentDescription = null)
+                    val endDate = remember { mutableStateOf(Long)}
+                    Text(text = "End date")
+                    Text(text = "22.01.2022")
                 }
             }
-            /*TODO: Datum der Projekte (Datepicker und im backend überarbeiten)*/
-            /*TODO: Expandable Card*/
-            project.tasks.forEach{
-                TaskRowWithCheckbox(task = it)
-                if(it != project.tasks.last())
-                    BasicDivider()
-            }
-        }
+
+        ExpandableCard(title = "Tasks") { TaskListWithCheckbox(tasks = project.tasks) }
 
         BasicCard {
             Row(
@@ -207,22 +178,53 @@ fun Project(project: Project) {
                 }
             }
         }
+
+        Spacer(modifier = Modifier.padding(20.dp))
+
+        PrimaryButton(label = "Save") {
+            stateHolder.saveProject(project)
+        }
+
+        Spacer(modifier = Modifier.padding(10.dp))
+
+        SecondaryButton(label = "Finish") {
+            project.finish(Date(), Date())
+        }
+
+        Spacer(modifier = Modifier.padding(20.dp))
+    }
+}
+
+@Composable
+fun TaskListWithCheckbox(tasks: List<Task>){
+    tasks.forEach{
+        TaskRowWithCheckbox(task = it)
+        if(it != tasks.last())
+            BasicDivider()
     }
 }
 
 @Composable
 fun TaskRowWithCheckbox(task: Task){
+    val taskCheck = remember{ mutableStateOf(task.isFinished) }
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 0.dp)
             .fillMaxWidth()
+            .clickable(onClick = { taskCheck.value = !taskCheck.value })
     ) {
         Text(
             text = task.taskDescription
         )
-        Checkbox(checked = task.isFinished, onCheckedChange = {task.isFinished = !task.isFinished})
+        Checkbox(
+            checked = taskCheck.value,
+            onCheckedChange = {task.isFinished = !task.isFinished; taskCheck.value = it},
+            colors = CheckboxDefaults.colors(
+                checkedColor = Purple
+            )
+        )
     }
 }
 
@@ -259,7 +261,7 @@ fun NewProject(
                 tasks.forEach {
                     TaskRow(task = it)
                 }
-                NewTaskRow { task -> tasks.add(task); println(tasks.last().taskDescription) }
+                NewTaskRow { task -> tasks.add(task) }
         }
         Spacer(modifier = Modifier.padding(10.dp))
         PrimaryButton(label = "Create") {
@@ -335,9 +337,11 @@ fun PreviewNewProject() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun PreviewProject(){
+    TestData()
     FreelancerTheme {
         Project(project = exampleProjects[0])
     }

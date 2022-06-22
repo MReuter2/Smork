@@ -1,6 +1,8 @@
 package de.mreuter.freelancer.ui.navigation
 
+import android.os.Build
 import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,13 +47,9 @@ val PROJECTS = "projects"
 val NEW_PROJECT = {clientID: UUID? ->
     if(clientID == null) "newproject?client={clientID}" else "newproject?client={$clientID}"
 }
-
-val bottomItemList = listOf(
-    Screens.Home,
-    Screens.Company,
-    Screens.Clients,
-    Screens.Projects
-)
+val PROJECT = {projectID: UUID? ->
+    if(projectID == null) "project/{projectID}" else "project/{$projectID}"
+}
 
 sealed class Screens(val title: String, val route: String, @DrawableRes val icons: Int){
     object Home: Screens("home", HOME, R.drawable.ic_outline_calendar_today_24)
@@ -95,6 +93,7 @@ fun BottomNavigationBar(pNavController: NavController? = rememberNavController()
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationHost(navController: NavHostController){
     NavHost(navController = navController, startDestination = SIGN_UP) {
@@ -165,6 +164,16 @@ fun NavigationHost(navController: NavHostController){
         ){
             val clientID = UUID.fromString(it.arguments?.getString("clientID"))
             NewProject(navController = navController, clientID, stateHolder.getClients())
+        }
+        composable(PROJECT(null),
+            arguments = listOf(
+                navArgument("projectID"){
+                    type = NavType.StringType
+                }
+            )
+        ){
+            val projectID = UUID.fromString(it.arguments?.getString("projectID"))
+            Project(stateHolder.getProjectByID(projectID))
         }
     }
 }
