@@ -389,7 +389,7 @@ fun DatePicker(onDateSelected: (LocalDate) -> Unit, onDismissRequest: () -> Unit
                     Text(
                         text = "Cancel",
                         style = MaterialTheme.typography.button,
-                        color = MaterialTheme.colors.onPrimary
+                        color = MaterialTheme.colors.onSecondary
                     )
                 }
 
@@ -403,7 +403,7 @@ fun DatePicker(onDateSelected: (LocalDate) -> Unit, onDismissRequest: () -> Unit
                     Text(
                         text = "OK",
                         style = MaterialTheme.typography.button,
-                        color = MaterialTheme.colors.onPrimary
+                        color = MaterialTheme.colors.onSecondary
                     )
                 }
 
@@ -411,6 +411,7 @@ fun DatePicker(onDateSelected: (LocalDate) -> Unit, onDismissRequest: () -> Unit
         }
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -422,7 +423,7 @@ fun CustomCalendarView(onDateSelected: (LocalDate) -> Unit) {
             CalendarView(ContextThemeWrapper(it, R.style.CalenderViewCustom))
         },
         update = { view ->
-            view.minDate = 2000000
+            view.minDate = 0
                 view.maxDate = 20000000000000
 
                 view.setOnDateChangeListener { _, year, month, dayOfMonth ->

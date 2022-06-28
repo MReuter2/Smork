@@ -1,8 +1,10 @@
 package de.mreuter.freelancer
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,6 +20,7 @@ import de.mreuter.freelancer.ui.theme.*
 import java.util.*
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -34,6 +37,7 @@ class MainActivity : ComponentActivity() {
 
 val stateHolder = Stateholder()
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainContent() {
     val navController = rememberNavController()
@@ -80,6 +84,7 @@ fun PreviewBottomBar() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun MainContentPreview() {

@@ -1,5 +1,8 @@
 package de.mreuter.freelancer.backend
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import java.time.LocalDate
 import java.util.*
 
 class Company(var name: String, var description: String = ""): AbstractEntity() {
@@ -61,7 +64,8 @@ class Company(var name: String, var description: String = ""): AbstractEntity() 
         projects.remove(project)
     }
 
-    fun finishProject(project: Project, startDate: Date, endDate: Date){
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun finishProject(project: Project, startDate: LocalDate, endDate: LocalDate){
         if(projects.contains(project)){
             project.finish(startDate,endDate)
         }else{

@@ -1,17 +1,21 @@
 package de.mreuter.freelancer.backend
 
 import android.media.Image
+import android.os.Build
+import androidx.annotation.RequiresApi
+import java.time.LocalDate
 import java.util.*
 
 
 class Project(var name: String, val client: Client, val tasks: MutableList<Task> = mutableListOf()): AbstractEntity() {
     var isFinished = false
-    var startDate: Date? = null
-    var finishDate: Date? = null
+    var startDate: LocalDate? = null
+    var finishDate: LocalDate? = null
     var images = mutableListOf<Image>()
 
-    fun finish(startDate: Date, finishDate: Date){
-        if(startDate.before(finishDate)) {
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun finish(startDate: LocalDate, finishDate: LocalDate){
+        if(startDate.isBefore(finishDate)) {
             this.startDate = startDate
             this.finishDate = finishDate
             isFinished = true
@@ -57,7 +61,8 @@ class ProjectService(val projectRepository: ProjectRepository){
         return projectRepository.save(project).uuid
     }
 
-    fun finishProject(project: Project, startDate: Date, endDate: Date){
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun finishProject(project: Project, startDate: LocalDate, endDate: LocalDate){
         project.finish(startDate, endDate)
         save(project)
     }
