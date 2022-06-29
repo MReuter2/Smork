@@ -8,7 +8,7 @@ android {
     compileSdk 31
 
     defaultConfig {
-        applicationId "de.mreuter.freelancer"
+        applicationId 'de.mreuter.freelancer'
         minSdk 21
         targetSdk 31
         versionCode 1
