@@ -26,7 +26,11 @@ class OwnerRepository(){
     }
 
     fun findByEmail(email: EmailAddress): Owner?{
-        exampleOwner.forEach { if(it.email?.equals(email) == true) return it}
+        exampleOwner.forEach {
+            println("${it.email?.emailAddress} != ${email.emailAddress}" )
+            if(it.email?.equals(email) == true)
+                return it
+        }
         return null
     }
 

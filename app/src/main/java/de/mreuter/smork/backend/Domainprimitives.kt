@@ -44,6 +44,16 @@ class EmailAddress(emailAddress: String){
         if(emailAddress.contains("@"))
             field = value
     }
+
+    override fun equals(other: Any?): Boolean {
+        if(other is EmailAddress)
+            return emailAddress == other.emailAddress
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        return emailAddress.hashCode()
+    }
 }
 
 class Maintenance(val client: Client, val description: String, val date: Date){

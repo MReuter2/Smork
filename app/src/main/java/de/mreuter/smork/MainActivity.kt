@@ -35,46 +35,9 @@ val stateHolder = Stateholder()
 @Composable
 fun MainContent() {
     val navController = rememberNavController()
-
+    TestData()
     Surface {
         NavigationHost(navController)
-    }
-}
-
-@Composable
-fun TopBar() {
-    TopAppBar(
-        title = {
-            Text(
-                "Smork",
-                color = White
-            )
-        },
-        backgroundColor = Purple
-    )
-}
-
-@Composable
-fun BottomBar() {
-    BottomAppBar(
-        backgroundColor = Purple,
-        content = {}
-    )
-}
-
-@Preview
-@Composable
-fun PreviewTopBar() {
-    FreelancerTheme {
-        TopBar()
-    }
-}
-
-@Preview
-@Composable
-fun PreviewBottomBar() {
-    FreelancerTheme {
-        BottomBar()
     }
 }
 

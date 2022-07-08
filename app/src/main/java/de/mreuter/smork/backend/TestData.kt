@@ -39,9 +39,12 @@ val exampleWorker = mutableListOf<Worker>(
 class TestData {
     init {
         exampleCompanies[0].addOwner(exampleOwner[0])
+
         exampleCompanies[0].addWorker(exampleWorker[0])
         exampleCompanies[0].addWorker(exampleWorker[1])
         exampleCompanies[0].addWorker(exampleWorker[2])
+
+        exampleCompanies[0].addClient(exampleClients[0])
 
         exampleProjects[0].addTask(Task("Cleaning Bathroom"))
         exampleProjects[0].addTask(Task("Installing Toilet"))

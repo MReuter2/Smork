@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -37,18 +39,106 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import de.mreuter.smork.R
-import de.mreuter.smork.TopBar
 import de.mreuter.smork.backend.TestData
 import de.mreuter.smork.backend.exampleProjects
 import de.mreuter.smork.ui.ExposedDropMenuStateHolder
-import de.mreuter.smork.ui.navigation.BottomNavigationBar
+import de.mreuter.smork.ui.navigation.Screen
 import de.mreuter.smork.ui.rememberExposedMenuStateHolder
 import de.mreuter.smork.ui.screens.TaskListWithCheckbox
 import de.mreuter.smork.ui.theme.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.*
+
+@Composable
+fun TopBar(additionalContent: @Composable () -> Unit = {}) {
+    TopAppBar(
+        title = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.app_name),
+                    color = White
+                )
+                additionalContent()
+            }
+        },
+        backgroundColor = Purple
+    )
+}
+
+@Composable
+fun BottomNavigationBar(navController: NavController) {
+    val navItems = listOf(
+        Screen.Home,
+        Screen.Projects,
+        Screen.Clients,
+        Screen.Company
+    )
+    BottomNavigation(
+        backgroundColor = Purple,
+        contentColor = White
+    ) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+        navItems.forEach { screen ->
+            BottomNavigationItem(
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                onClick = {
+                    navController.navigate(screen.route){
+                        /*popUpTo(navController.graph.findStartDestination().id){
+                            saveState = true
+                        }*/
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = {
+                    if(screen.icons != null)
+                        Icon(
+                            painter = painterResource(id = screen.icons),
+                            contentDescription = null
+                        )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun BasicScaffold(navController: NavController, content: @Composable () -> Unit){
+    Scaffold(
+        topBar = { TopBar()},
+        bottomBar = { BottomNavigationBar(navController = navController)}
+    ) {
+        content()
+    }
+}
+
+@Preview
+@Composable
+fun PreviewTopBar() {
+    FreelancerTheme {
+        TopBar()
+    }
+}
+
+@Preview
+@Composable
+fun PreviewBottomBar() {
+    FreelancerTheme {
+        BottomNavigationBar(rememberNavController())
+    }
+}
 
 @Composable
 fun BasicListItem(topic: String? = null, description: String? = null) {
@@ -253,22 +343,19 @@ fun BasicDivider() {
 }
 
 @Composable
-fun BasicScaffoldWithLazyColumn(
-    navController: NavController?,
+fun BasicLazyColumn(
     content: @Composable LazyItemScope.() -> Unit
 ) {
-    Scaffold(
-        topBar = { TopBar() },
-        bottomBar = { BottomNavigationBar(navController) }
-    ) {
         LazyColumn(
             modifier = Modifier
                 .wrapContentWidth(align = Alignment.CenterHorizontally)
                 .padding(start = 20.dp, end = 20.dp)
         ) {
-            item(content = content)
+            item(content = {
+                content()
+                Spacer(modifier = Modifier.padding(100.dp))
+            })
         }
-    }
 }
 
 class DropDown(val dropDownItems: List<Any>) {

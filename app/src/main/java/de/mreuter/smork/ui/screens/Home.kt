@@ -6,24 +6,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import de.mreuter.smork.backend.Maintenance
 import de.mreuter.smork.backend.Project
 import de.mreuter.smork.backend.exampleClients
 import de.mreuter.smork.backend.exampleProjects
 import de.mreuter.smork.ui.elements.*
-import de.mreuter.smork.ui.navigation.PROJECTS
 import de.mreuter.smork.ui.theme.FreelancerTheme
 import de.mreuter.smork.ui.theme.Typography
 import java.util.*
 
 @Composable
 fun Home(
-    navController: NavController?,
     activeProjects: List<Project>,
-    activeMaintenances: List<Maintenance>
+    activeMaintenances: List<Maintenance>,
+    navigateToProject: (Project) -> Unit = {}
 ) {
-    BasicScaffoldWithLazyColumn(navController = navController) {
+    BasicLazyColumn {
         Spacer(modifier = Modifier.padding(10.dp))
         BasicCard {
                 Text(text = "Active Projects", style = Typography.h2)
@@ -31,14 +29,14 @@ fun Home(
                 Column(
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    activeProjects.forEach {
+                    activeProjects.forEach {project ->
                         ClickableListItem(
-                            it.name,
-                            "${it.client.fullname}"
+                            project.name,
+                            "${project.client.fullname}"
                         ) {
-                            navController?.navigate(PROJECTS)
+                            navigateToProject(project)
                         }
-                        if (it != activeProjects.last())
+                        if (project != activeProjects.last())
                             BasicDivider()
                     }
                 }
@@ -69,6 +67,6 @@ fun Home(
 @Preview
 fun HomePreview() {
     FreelancerTheme {
-        Home(null, exampleProjects, listOf(Maintenance(exampleClients[0], "Ma", Date(2022, 6, 20))))
+        Home(exampleProjects, listOf(Maintenance(exampleClients[0], "Ma", Date(2022, 6, 20)))) {}
     }
 }

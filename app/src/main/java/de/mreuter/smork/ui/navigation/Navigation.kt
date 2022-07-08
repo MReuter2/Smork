@@ -3,180 +3,240 @@ package de.mreuter.smork.ui.navigation
 import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.painterResource
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
+import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import de.mreuter.smork.R
 import de.mreuter.smork.*
+import de.mreuter.smork.backend.EmailAddress
+import de.mreuter.smork.backend.Fullname
+import de.mreuter.smork.backend.exampleCompanies
+import de.mreuter.smork.ui.elements.BasicScaffold
+import de.mreuter.smork.ui.elements.BottomNavigationBar
+import de.mreuter.smork.ui.elements.TopBar
 import de.mreuter.smork.ui.screens.*
-import de.mreuter.smork.ui.theme.Purple
 import de.mreuter.smork.ui.theme.White
 import java.util.*
 
-val SIGN_IN = "signIn"
-val SIGN_UP = "signUp"
-val JOIN_COMPANY = "joinCompany"
-val HOME = "home"
-val COMPANY = {companyID: UUID? ->
-    if(companyID == null) "company/{companyID}" else "company/{$companyID}"
-}
-val CLIENTS = "clients"
-val CLIENT_PROFILE = { clientID: UUID?, editable: Boolean? ->
-    if(clientID == null) "client/{clientID}?edit={editable}"
-    else "client/{$clientID}?edit={$editable}"
-}
-val NEW_CLIENT = "newclient"
-val WORKER_PROFILE = { workerID: UUID?, editable: Boolean? ->
-    if(workerID == null) "worker/{workerID}?edit={editable}"
-    else "worker/{$workerID}?edit={$editable}"
-}
-val OWNER_PROFILE = { ownerID: UUID?, editable: Boolean? ->
-    if(ownerID == null) "owner/{ownerID}?edit={editable}"
-    else "owner/{$ownerID}?edit={$editable}"
-}
-val PROJECTS = "projects"
-val NEW_PROJECT = {clientID: UUID? ->
-    if(clientID == null) "newproject?client={clientID}" else "newproject?client={$clientID}"
-}
-val PROJECT = {projectID: UUID? ->
-    if(projectID == null) "project/{projectID}" else "project/{$projectID}"
+sealed class Screen(val route: String, @DrawableRes val icons: Int? = null) {
+    object Login : Screen("login")
+    object SignIn : Screen("signIn")
+    object SignUp : Screen("signUp")
+    object JoinCompany : Screen("joinCompany")
+
+    object Home : Screen("home", R.drawable.ic_outline_calendar_today_24)
+
+    object Company : Screen("company", R.drawable.warehouse_black_24dp)
+
+    object Clients : Screen("client_view", R.drawable.ic_outline_people_24)
+
+    object Projects : Screen("project_view", R.drawable.ic_outline_assignment_24)
+
+    fun withArgs(vararg args: String): String {
+        return buildString {
+            append(route)
+            args.forEach {
+                if (it[0] == '?') {
+                    append(it)
+                } else {
+                    append("/$it")
+                }
+            }
+        }
+    }
 }
 
-sealed class Screens(val title: String, val route: String, @DrawableRes val icons: Int){
-    object Home: Screens("home", HOME, R.drawable.ic_outline_calendar_today_24)
-    object Company: Screens("company", COMPANY(null), R.drawable.warehouse_black_24dp)
-    object Clients: Screens("clients", CLIENTS, R.drawable.ic_outline_people_24)
-    object Projects: Screens("projects", PROJECTS, R.drawable.ic_outline_assignment_24)
-}
-
-@Composable
-fun BottomNavigationBar(pNavController: NavController? = rememberNavController()) {
-    var navController = pNavController
-    if(navController == null)
-        navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val navItems = listOf(
-        Screens.Home,
-        Screens.Projects,
-        Screens.Clients,
-        Screens.Company
-    )
-    val currentDestination = navBackStackEntry?.destination
-    BottomNavigation(
-        backgroundColor = Purple,
-        contentColor = White
-    ) {
-        navItems.forEach { screens ->
-            BottomNavigationItem(
-                selected = currentDestination?.route == screens.route,
-                onClick = {
-                    navController.navigate(screens.route)
-                },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = screens.icons),
-                        contentDescription = null
-                    )
-                },
-                label = { Text(text = screens.title) }
+fun NavGraphBuilder.loginGraph(navController: NavController) {
+    navigation(startDestination = Screen.SignIn.route, route = Screen.Login.route) {
+        composable(Screen.SignIn.route) {
+            SignIn(
+                navigateToSignUp = { navController.navigate(Screen.SignUp.route) },
+                navigateToHome = { navController.navigate(Screen.Home.route) }
             )
+        }
+        composable(Screen.SignUp.route) {
+            SignUp(
+                navigateToSignIn = { navController.navigate(Screen.SignIn.route) },
+                navigateToJoinCompany = { fullname, emailAddress, phoneNumber ->
+                    navController.navigate(
+                        Screen.JoinCompany.withArgs(
+                            fullname.firstname,
+                            fullname.lastname,
+                            emailAddress.emailAddress,
+                            phoneNumber.toString()
+                        )
+                    )
+                }
+            )
+        }
+        composable(Screen.JoinCompany.route + "/{firstname}/{lastname}/{emailaddress}/{phonenumber}",
+            arguments = listOf(
+                navArgument("phonenumber") {
+                    type = NavType.LongType
+                }
+            )
+        ) {
+            val fullname = Fullname(
+                it.arguments?.getString("firstname") ?: throw RuntimeException(),
+                it.arguments?.getString("lastname") ?: throw RuntimeException()
+            )
+            val emailAddress =
+                if (it.arguments?.getString("emailaddress") == null) null else EmailAddress(
+                    it.arguments?.getString("emailaddress")!!
+                )
+            val phonenumber = it.arguments?.getLong("phonenumber")
+            JoinCompany(fullname, emailAddress, phonenumber)
+        }
+    }
+}
+
+fun NavGraphBuilder.clientGraph(navController: NavController) {
+    navigation(startDestination = Screen.Clients.route + "/clients", route = Screen.Clients.route) {
+        composable(Screen.Clients.route + "/clients") {
+            Scaffold(
+                topBar = {
+                    TopBar {
+                        IconButton(
+                            onClick = {
+                                navController.navigate(Screen.Clients.route + "/newClient")
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_outline_add_24),
+                                contentDescription = null,
+                                tint = White
+                            )
+                        }
+                    }
+                },
+                bottomBar = { BottomNavigationBar(navController) }
+            ) {
+                Clients(navigateToClient = { navController.navigate(Screen.Clients.withArgs(it.uuid.toString())) })
+            }
+        }
+        composable(Screen.Clients.route + "/newClient") {
+            BasicScaffold(navController = navController) {
+                ClientCreatingView(navigateToClient = {
+                    navController.navigate(
+                        Screen.Clients.withArgs(
+                            it.uuid.toString()
+                        )
+                    )
+                })
+            }
+        }
+        composable(Screen.Clients.route + "/{clientID}?edit={edit}",
+            arguments = listOf(
+                navArgument("edit") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) {
+            if (it.arguments?.getString("clientID") != null) {
+                val client =
+                    stateHolder.getClientByID(UUID.fromString(it.arguments?.getString("clientID")))
+                        ?: throw RuntimeException("No Client with ID: " + it.arguments?.getString("clientID"))
+                if (it.arguments?.getBoolean("edit") == false) {
+                    BasicScaffold(navController = navController) {
+                        ClientView(
+                            client = client,
+                            changeToEditView = {
+                                navController.navigate(
+                                    Screen.Clients.withArgs(
+                                        client.uuid.toString(),
+                                        "?edit=true"
+                                    )
+                                )
+                            },
+                            navigateToNewProject = { navController.navigate(Screen.Projects.route + "/newProject") }
+                        )
+                    }
+                } else {
+                    BasicScaffold(navController = navController) {
+                        ClientEditingView(
+                            client,
+                            navigateToClient = { client ->
+                                navController.navigate(
+                                    Screen.Clients.withArgs(client.uuid.toString())
+                                )
+                            })
+                    }
+                }
+            }
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun NavGraphBuilder.projectGraph(navController: NavController) {
+    navigation(startDestination = Screen.Projects.route + "/projects", route = Screen.Projects.route) {
+        composable(Screen.Projects.route + "/projects") {
+            BasicScaffold(navController = navController) {
+                Projects(
+                    stateHolder.getProjects(),
+                    navigateToNewProject = { navController.navigate(Screen.Projects.route + "/newProject") },
+                    navigateToProject = { project ->
+                        navController.navigate(
+                            Screen.Projects.withArgs(
+                                project.uuid.toString()
+                            )
+                        )
+                    }
+                )
+            }
+        }
+        composable(Screen.Projects.route + "/newProject") {
+            BasicScaffold(navController = navController) {
+                NewProject(
+                    clients = stateHolder.getClients(),
+                    navigateToProject = { project ->
+                        navController.navigate(
+                            Screen.Projects.withArgs(project.uuid.toString())
+                        )
+                    }
+                )
+            }
+        }
+        composable(Screen.Projects.route + "/{projectID}") {
+            val project =
+                stateHolder.getProjectByID(UUID.fromString(it.arguments?.getString("projectID")))
+            BasicScaffold(navController = navController) { Project(project) }
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NavigationHost(navController: NavHostController){
-    NavHost(navController = navController, startDestination = SIGN_UP) {
-        composable(SIGN_IN) { SignIn(navController = navController) }
-        composable(SIGN_UP) { SignUp(navController = navController) }
-        composable(JOIN_COMPANY) { JoinCompany(navController = navController) }
-        composable(HOME) { Home(navController = navController, stateHolder.getProjects(), stateHolder.getMaintenances()) }
-        composable(COMPANY(null)) { YourCompany() }
-        composable(CLIENTS) { Clients(navController = navController) }
-        composable(NEW_CLIENT) { NewClient(navController = navController) }
-        composable(CLIENT_PROFILE(null, null),
-            arguments = listOf(
-                navArgument("clientID") {
-                    type = NavType.StringType
-                },
-                navArgument("edit") {
-                    type = NavType.BoolType
-                }
-            )
-        ) {
-            val clientID = UUID.fromString(it.arguments?.getString("clientID"))
-            val edit = it.arguments?.getBoolean("edit")
-            if (clientID != null) {
-                ClientProfile(stateHolder.getClientByID(clientID) ?: throw RuntimeException("There is no Client with ID: $clientID"), edit ?: false)
+fun NavigationHost(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = Screen.Login.route) {
+        loginGraph(navController)
+        clientGraph(navController)
+        projectGraph(navController)
+        composable(Screen.Home.route) {
+            BasicScaffold(navController = navController) {
+                Home(
+                    stateHolder.getProjects(),
+                    stateHolder.getMaintenances(),
+                    navigateToProject = { project ->
+                        navController.navigate(
+                            Screen.Projects.withArgs(
+                                project.uuid.toString()
+                            )
+                        )
+                    }
+                )
             }
         }
-        /*composable(WORKER_PROFILE(null,null),
-            arguments = listOf(
-                navArgument("workerID") {
-                    type = NavType.StringType
-                },
-                navArgument("edit") {
-                    type = NavType.BoolType
-                }
-            )
-        ) {
-            val workerID = UUID.fromString(it.arguments?.getString("workerID"))
-            val edit = it.arguments?.getBoolean("edit")
-            if (workerID != null) {
-                WorkerView(stateHolder?., edit ?: false)
+        composable(Screen.Company.route) {
+            BasicScaffold(navController = navController) {
+                YourCompany(
+                    stateHolder.usersCompany() ?: throw RuntimeException("No Company")
+                )
             }
-        }
-        composable(OWNER_PROFILE(null, null),
-            arguments = listOf(
-                navArgument("ownerID") {
-                    type = NavType.IntType
-                },
-                navArgument("edit") {
-                    type = NavType.BoolType
-                }
-            )
-        ) {
-            val ownerID = UUID.fromString(it.arguments?.getString("ownerID"))
-            val edit = it.arguments?.getBoolean("edit")
-            if (ownerID != null) {
-                OwnerView(personService.findByID(ownerID) as Owner, edit ?: false)
-            }
-        }*/
-        composable(PROJECTS){
-            Projects(navController, stateHolder.getProjects())
-        }
-        composable(NEW_PROJECT(null),
-            arguments = listOf(
-                navArgument("clientID"){
-                    type = NavType.StringType
-                }
-            )
-        ){
-            val clientID = UUID.fromString(it.arguments?.getString("clientID"))
-            NewProject(navController = navController, clientID, stateHolder.getClients())
-        }
-        composable(PROJECT(null),
-            arguments = listOf(
-                navArgument("projectID"){
-                    type = NavType.StringType
-                }
-            )
-        ){
-            val projectID = UUID.fromString(it.arguments?.getString("projectID"))
-            Project(stateHolder.getProjectByID(projectID))
         }
     }
 }

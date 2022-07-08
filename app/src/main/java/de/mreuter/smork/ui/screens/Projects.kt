@@ -17,23 +17,22 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import de.mreuter.smork.R
 import de.mreuter.smork.*
 import de.mreuter.smork.backend.*
 import de.mreuter.smork.ui.elements.*
-import de.mreuter.smork.ui.navigation.NEW_PROJECT
-import de.mreuter.smork.ui.navigation.PROJECT
-import de.mreuter.smork.ui.navigation.PROJECTS
 import de.mreuter.smork.ui.theme.*
-import java.util.*
 
 @Composable
-fun Projects(navController: NavController? = null, projects: List<Project>) {
+fun Projects(
+    projects: List<Project>,
+    navigateToNewProject: () -> Unit = {},
+    navigateToProject: (Project) -> Unit = {}
+) {
     val activeProjects = projects.filter { !it.isFinished }
     val finishedProjects = projects.filter { it.isFinished }
 
-    BasicScaffoldWithLazyColumn(navController = navController) {
+    BasicLazyColumn {
         Spacer(modifier = Modifier.padding(10.dp))
         BasicCard {
             Row(
@@ -46,7 +45,7 @@ fun Projects(navController: NavController? = null, projects: List<Project>) {
                 Text(text = "Active Projects", style = Typography.h2)
                 IconButton(
                     onClick = {
-                        navController?.navigate(NEW_PROJECT(null))
+                        navigateToNewProject()
                     },
                     modifier = Modifier.then(Modifier.size(25.dp))
                 ) {
@@ -64,9 +63,7 @@ fun Projects(navController: NavController? = null, projects: List<Project>) {
                     ClickableListItem(
                         project.name, "${project.client.fullname}"
                     ) {
-                        navController?.navigate(
-                            PROJECT(project.uuid)
-                        )
+                        navigateToProject(project)
                     }
                     if (activeProjects.last() != project)
                         Divider(modifier = Modifier.padding(horizontal = 2.dp, vertical = 8.dp))
@@ -87,9 +84,7 @@ fun Projects(navController: NavController? = null, projects: List<Project>) {
                     ClickableListItem(
                         project.name, "${project.client.fullname}"
                     ) {
-                        navController?.navigate(
-                            PROJECTS
-                        )
+                        navigateToProject(project)
                     }
                     if (finishedProjects.last() != project)
                         Divider(
@@ -112,13 +107,17 @@ fun Project(project: Project) {
     val startDate = remember { mutableStateOf(project.startDate) }
     val finishDate = remember { mutableStateOf(project.finishDate) }
 
-    if(openStartDateDialog.value || openFinishDateDialog.value){
-        if(openStartDateDialog.value)
-            DatePicker( { project.startDate = it }, {openStartDateDialog.value = !openStartDateDialog.value})
+    if (openStartDateDialog.value || openFinishDateDialog.value) {
+        if (openStartDateDialog.value)
+            DatePicker(
+                { project.startDate = it },
+                { openStartDateDialog.value = !openStartDateDialog.value })
         else
-            DatePicker( { project.finishDate = it }, {openFinishDateDialog.value = !openFinishDateDialog.value})
-    }else {
-        BasicScaffoldWithLazyColumn(navController = null) {
+            DatePicker(
+                { project.finishDate = it },
+                { openFinishDateDialog.value = !openFinishDateDialog.value })
+    } else {
+        BasicLazyColumn {
             BasicCard {
                 Text(
                     text = project.name,
@@ -195,24 +194,22 @@ fun Project(project: Project) {
                     project.finish(startDate.value!!, finishDate.value!!)
                 }
             }
-
-            Spacer(modifier = Modifier.padding(50.dp))
         }
     }
 }
 
 @Composable
-fun TaskListWithCheckbox(tasks: List<Task>){
-    tasks.forEach{
+fun TaskListWithCheckbox(tasks: List<Task>) {
+    tasks.forEach {
         TaskRowWithCheckbox(task = it)
-        if(it != tasks.last())
+        if (it != tasks.last())
             BasicDivider()
     }
 }
 
 @Composable
-fun TaskRowWithCheckbox(task: Task){
-    val taskCheck = remember{ mutableStateOf(task.isFinished) }
+fun TaskRowWithCheckbox(task: Task) {
+    val taskCheck = remember { mutableStateOf(task.isFinished) }
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -226,7 +223,7 @@ fun TaskRowWithCheckbox(task: Task){
         )
         Checkbox(
             checked = taskCheck.value,
-            onCheckedChange = {task.isFinished = !task.isFinished; taskCheck.value = it},
+            onCheckedChange = { task.isFinished = !task.isFinished; taskCheck.value = it },
             colors = CheckboxDefaults.colors(
                 checkedColor = Purple
             )
@@ -236,9 +233,9 @@ fun TaskRowWithCheckbox(task: Task){
 
 @Composable
 fun NewProject(
-    navController: NavController? = null,
-    clientID: UUID? = null,
-    clients: List<Client>
+    preselectedClient: Client? = null,
+    clients: List<Client>,
+    navigateToProject: (Project) -> Unit = {}
 ) {
     val context = LocalContext.current
     val projectName = remember { mutableStateOf(String()) }
@@ -248,7 +245,7 @@ fun NewProject(
         .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
     val clientDropDown = DropDown(sortedClients)
 
-    BasicScaffoldWithLazyColumn(navController = navController) {
+    BasicLazyColumn {
         Spacer(modifier = Modifier.padding(20.dp))
         BasicOutlinedTextField(
             label = "Project name",
@@ -259,30 +256,31 @@ fun NewProject(
         clientDropDown.DropDownTextfield(label = "Client")
         Spacer(modifier = Modifier.padding(10.dp))
         BasicCard {
-                Text(
-                    text = "Tasks",
-                    style = Typography.subtitle1,
-                    modifier = Modifier.padding(bottom = 5.dp)
-                )
-                tasks.forEach {
-                    TaskRow(task = it)
-                }
-                NewTaskRow { task -> tasks.add(task) }
+            Text(
+                text = "Tasks",
+                style = Typography.subtitle1,
+                modifier = Modifier.padding(bottom = 5.dp)
+            )
+            tasks.forEach {
+                TaskRow(task = it)
+            }
+            NewTaskRow { task -> tasks.add(task) }
         }
         Spacer(modifier = Modifier.padding(10.dp))
         PrimaryButton(label = "Create") {
             val client: Client = clientDropDown.exposedMenuStateHolder.selectedItem as Client
-            client.addProject(Project(projectName.value, client, tasks))
-            stateHolder.saveCompany(stateHolder.usersCompany() ?: throw RuntimeException())
+            val project = Project(projectName.value, client, tasks)
+            client.addProject(project)
+            stateHolder.saveProject(project)
             Toast.makeText(context, "Project created", Toast.LENGTH_LONG).show()
-            navController?.navigate(PROJECTS)
+            navigateToProject(project)
         }
         Spacer(modifier = Modifier.padding(50.dp))
     }
 }
 
 @Composable
-fun NewTaskRow(actionOnClick: (Task) -> Unit) {
+fun NewTaskRow(actionOnClick: (Task) -> Unit = {}) {
     var text by remember { mutableStateOf(TextFieldValue("")) }
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -346,7 +344,7 @@ fun PreviewNewProject() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun PreviewProject(){
+fun PreviewProject() {
     TestData()
     FreelancerTheme {
         Project(project = exampleProjects[0])
