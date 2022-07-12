@@ -19,9 +19,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FreelancerTheme {
-                Surface(
-                    color = BackgroundColor
-                ) {
+                Surface{
                     MainContent()
                 }
             }

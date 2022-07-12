@@ -8,13 +8,15 @@ data class Client(
     var phonenumber: Long? = null,
     var address: Address? = null,
     val id: UUID = UUID.randomUUID()
-): Person(fullname){
+): Person(fullname, id = id){
     private val projects = mutableListOf<Project>()
     private val maintenances = mutableListOf<Maintenance>()
 
     override fun toString(): String {
         return fullname.toString()
     }
+
+    fun getProjects(): Iterator<Project> = projects.iterator()
 
     fun addProject(project: Project){
         projects.add(project)
@@ -23,6 +25,8 @@ data class Client(
     fun removeProject(project: Project){
         projects.remove(project)
     }
+
+    fun getMaintenances(): Iterator<Maintenance> = maintenances.iterator()
 
     fun addMaintenance(maintenance: Maintenance){
         maintenances.add(maintenance)

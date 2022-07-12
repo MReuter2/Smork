@@ -27,72 +27,62 @@ import de.mreuter.smork.ui.theme.*
 fun Projects(
     projects: List<Project>,
     navigateToNewProject: () -> Unit = {},
-    navigateToProject: (Project) -> Unit = {}
+    navigateToProject: (Project) -> Unit = {},
+    bottomBar: @Composable () -> Unit
 ) {
     val activeProjects = projects.filter { !it.isFinished }
     val finishedProjects = projects.filter { it.isFinished }
 
-    BasicLazyColumn {
-        Spacer(modifier = Modifier.padding(10.dp))
-        BasicCard {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 5.dp)
-            ) {
-                Text(text = "Active Projects", style = Typography.h2)
-                IconButton(
-                    onClick = {
-                        navigateToNewProject()
-                    },
-                    modifier = Modifier.then(Modifier.size(25.dp))
+    BasicScaffold(
+        bottomBar = { bottomBar() },
+        topBarTitle = "Projects",
+        trailingAppBarIcons = { IconButton(onClick = { navigateToNewProject() }) {
+            Icon(painter = painterResource(id = R.drawable.ic_outline_add_24), contentDescription = null)
+        }}
+    ){
+        BasicLazyColumn {
+            Spacer(modifier = Modifier.padding(10.dp))
+            BasicCard {
+                Text(text = "Active Projects", style = MaterialTheme.typography.h2)
+                Spacer(modifier = Modifier.padding(10.dp))
+                Column(
+                    modifier = Modifier.padding(3.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_outline_add_24),
-                        contentDescription = null
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.padding(10.dp))
-            Column(
-                modifier = Modifier.padding(3.dp)
-            ) {
-                activeProjects.forEach { project ->
-                    ClickableListItem(
-                        project.name, "${project.client.fullname}"
-                    ) {
-                        navigateToProject(project)
+                    activeProjects.forEach { project ->
+                        ClickableListItem(
+                            project.name, "${project.client.fullname}"
+                        ) {
+                            navigateToProject(project)
+                        }
+                        if (activeProjects.last() != project)
+                            Divider(modifier = Modifier.padding(horizontal = 2.dp, vertical = 8.dp))
                     }
-                    if (activeProjects.last() != project)
-                        Divider(modifier = Modifier.padding(horizontal = 2.dp, vertical = 8.dp))
                 }
             }
-        }
 
-        BasicCard {
-            Text(
-                text = "Finished Projects",
-                style = Typography.h2
-            )
-            Spacer(modifier = Modifier.padding(10.dp))
-            Column(
-                modifier = Modifier.padding(3.dp)
-            ) {
-                finishedProjects.forEach { project ->
-                    ClickableListItem(
-                        project.name, "${project.client.fullname}"
-                    ) {
-                        navigateToProject(project)
-                    }
-                    if (finishedProjects.last() != project)
-                        Divider(
-                            modifier = Modifier.padding(
-                                horizontal = 2.dp,
-                                vertical = 8.dp
+            BasicCard {
+                Text(
+                    text = "Finished Projects",
+                    style = MaterialTheme.typography.h2
+                )
+                Spacer(modifier = Modifier.padding(10.dp))
+                Column(
+                    modifier = Modifier.padding(3.dp)
+                ) {
+                    finishedProjects.forEach { project ->
+                        ClickableListItem(
+                            project.name, "${project.client.fullname}"
+                        ) {
+                            navigateToProject(project)
+                        }
+                        if (finishedProjects.last() != project)
+                            Divider(
+                                modifier = Modifier.padding(
+                                    horizontal = 2.dp,
+                                    vertical = 8.dp
+                                )
                             )
-                        )
+                    }
                 }
             }
         }
@@ -101,7 +91,7 @@ fun Projects(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Project(project: Project) {
+fun Project(project: Project, bottomBar: @Composable () -> Unit, backNavigation: () -> Unit) {
     val openStartDateDialog = remember { mutableStateOf(false) }
     val openFinishDateDialog = remember { mutableStateOf(false) }
     val startDate = remember { mutableStateOf(project.startDate) }
@@ -110,27 +100,27 @@ fun Project(project: Project) {
     if (openStartDateDialog.value || openFinishDateDialog.value) {
         if (openStartDateDialog.value)
             DatePicker(
-                { project.startDate = it },
+                { project.startDate = Date(it) },
                 { openStartDateDialog.value = !openStartDateDialog.value })
         else
             DatePicker(
-                { project.finishDate = it },
+                { project.finishDate = Date(it) },
                 { openFinishDateDialog.value = !openFinishDateDialog.value })
-    } else {
+    }
+    BasicScaffold(bottomBar = { bottomBar() }, topBarTitle = "Project", backNavigation = {backNavigation()}){
         BasicLazyColumn {
             BasicCard {
                 Text(
                     text = project.name,
-                    style = Typography.h2
+                    style = MaterialTheme.typography.h2
                 )
                 Text(
                     text = project.client.toString(),
-                    style = Typography.subtitle2,
+                    style = MaterialTheme.typography.subtitle2,
                     modifier = Modifier.padding(1.dp)
                 )
             }
 
-            /*TODO: Datum der Projekte (Datepicker und im backend überarbeiten)*/
             ExpandableCard(title = "Time period") {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -138,9 +128,10 @@ fun Project(project: Project) {
                         .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 6.dp)
                         .fillMaxWidth()
                 ) {
-                    Text(text = "Start date")
+                    Text(text = "Start date", style = MaterialTheme.typography.subtitle1)
                     ClickableText(
-                        text = AnnotatedString(project.startDate.toString())
+                        text = AnnotatedString(project.startDate?.toString() ?: "Select date"),
+                        style = MaterialTheme.typography.subtitle1
                     ) {
                         openStartDateDialog.value = !openStartDateDialog.value
                     }
@@ -151,9 +142,10 @@ fun Project(project: Project) {
                         .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 0.dp)
                         .fillMaxWidth()
                 ) {
-                    Text(text = "End date")
+                    Text(text = "End date", style = MaterialTheme.typography.subtitle1)
                     ClickableText(
-                        text = AnnotatedString(project.finishDate.toString())
+                        text = AnnotatedString(project.finishDate?.toString() ?: "Select date"),
+                        style = MaterialTheme.typography.subtitle1
                     ) {
                         openFinishDateDialog.value = !openFinishDateDialog.value
                     }
@@ -168,7 +160,7 @@ fun Project(project: Project) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Images", style = Typography.h2)
+                    Text(text = "Images", style = MaterialTheme.typography.h2)
                     IconButton(
                         onClick = { /*TODO*/ },
                         modifier = Modifier.then(Modifier.size(25.dp))
@@ -199,43 +191,12 @@ fun Project(project: Project) {
 }
 
 @Composable
-fun TaskListWithCheckbox(tasks: List<Task>) {
-    tasks.forEach {
-        TaskRowWithCheckbox(task = it)
-        if (it != tasks.last())
-            BasicDivider()
-    }
-}
-
-@Composable
-fun TaskRowWithCheckbox(task: Task) {
-    val taskCheck = remember { mutableStateOf(task.isFinished) }
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 0.dp)
-            .fillMaxWidth()
-            .clickable(onClick = { taskCheck.value = !taskCheck.value })
-    ) {
-        Text(
-            text = task.taskDescription
-        )
-        Checkbox(
-            checked = taskCheck.value,
-            onCheckedChange = { task.isFinished = !task.isFinished; taskCheck.value = it },
-            colors = CheckboxDefaults.colors(
-                checkedColor = Purple
-            )
-        )
-    }
-}
-
-@Composable
 fun NewProject(
     preselectedClient: Client? = null,
     clients: List<Client>,
-    navigateToProject: (Project) -> Unit = {}
+    navigateToClient: (Client) -> Unit = {},
+    bottomBar: @Composable () -> Unit,
+    backNavigation: () -> Unit
 ) {
     val context = LocalContext.current
     val projectName = remember { mutableStateOf(String()) }
@@ -245,37 +206,39 @@ fun NewProject(
         .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
     val clientDropDown = DropDown(sortedClients)
 
-    BasicLazyColumn {
-        Spacer(modifier = Modifier.padding(20.dp))
-        BasicOutlinedTextField(
-            label = "Project name",
-            value = projectName.value,
-            onValueChange = { projectName.value = it }
-        )
-        Spacer(modifier = Modifier.padding(5.dp))
-        clientDropDown.DropDownTextfield(label = "Client")
-        Spacer(modifier = Modifier.padding(10.dp))
-        BasicCard {
-            Text(
-                text = "Tasks",
-                style = Typography.subtitle1,
-                modifier = Modifier.padding(bottom = 5.dp)
+    BasicScaffold(bottomBar = { bottomBar() }, topBarTitle = "New Project", backNavigation = {backNavigation()}){
+        BasicLazyColumn {
+            Spacer(modifier = Modifier.padding(20.dp))
+            BasicOutlinedTextField(
+                label = "Project name",
+                value = projectName.value,
+                onValueChange = { projectName.value = it }
             )
-            tasks.forEach {
-                TaskRow(task = it)
+            Spacer(modifier = Modifier.padding(5.dp))
+            clientDropDown.DropDownTextfield(label = "Client", preselectedItem = preselectedClient)
+            Spacer(modifier = Modifier.padding(10.dp))
+            BasicCard {
+                Text(
+                    text = "Tasks",
+                    style = MaterialTheme.typography.subtitle1,
+                    modifier = Modifier.padding(bottom = 5.dp)
+                )
+                tasks.forEach {
+                    TaskRow(task = it)
+                }
+                NewTaskRow { task -> tasks.add(task) }
             }
-            NewTaskRow { task -> tasks.add(task) }
+            Spacer(modifier = Modifier.padding(10.dp))
+            PrimaryButton(label = "Create") {
+                val client: Client = clientDropDown.exposedMenuStateHolder.selectedItem as Client
+                val project = Project(projectName.value, client, tasks)
+                client.addProject(project)
+                stateHolder.saveProject(project)
+                Toast.makeText(context, "Project created", Toast.LENGTH_LONG).show()
+                navigateToClient(client)
+            }
+            Spacer(modifier = Modifier.padding(50.dp))
         }
-        Spacer(modifier = Modifier.padding(10.dp))
-        PrimaryButton(label = "Create") {
-            val client: Client = clientDropDown.exposedMenuStateHolder.selectedItem as Client
-            val project = Project(projectName.value, client, tasks)
-            client.addProject(project)
-            stateHolder.saveProject(project)
-            Toast.makeText(context, "Project created", Toast.LENGTH_LONG).show()
-            navigateToProject(project)
-        }
-        Spacer(modifier = Modifier.padding(50.dp))
     }
 }
 
@@ -315,6 +278,39 @@ fun NewTaskRow(actionOnClick: (Task) -> Unit = {}) {
 }
 
 @Composable
+fun TaskListWithCheckbox(tasks: List<Task>) {
+    tasks.forEach {
+        TaskRowWithCheckbox(task = it)
+        if (it != tasks.last())
+            BasicDivider()
+    }
+}
+
+@Composable
+fun TaskRowWithCheckbox(task: Task) {
+    val taskCheck = remember { mutableStateOf(task.isFinished) }
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(start = 6.dp, end = 14.dp, top = 0.dp, bottom = 0.dp)
+            .fillMaxWidth()
+            .clickable(onClick = { taskCheck.value = !taskCheck.value })
+    ) {
+        Text(
+            text = task.taskDescription
+        )
+        Checkbox(
+            checked = taskCheck.value,
+            onCheckedChange = { task.isFinished = !task.isFinished; taskCheck.value = it },
+            colors = CheckboxDefaults.colors(
+                checkedColor = MaterialTheme.colors.primary
+            )
+        )
+    }
+}
+
+@Composable
 fun TaskRow(task: Task) {
     Column {
         Text(
@@ -329,7 +325,10 @@ fun TaskRow(task: Task) {
 fun PreviewProjects() {
     TestData()
     FreelancerTheme {
-        Projects(projects = exampleProjects)
+        Projects(
+            projects = exampleProjects,
+            bottomBar = { BottomNavigationBar() }
+        )
     }
 }
 
@@ -337,7 +336,12 @@ fun PreviewProjects() {
 @Composable
 fun PreviewNewProject() {
     FreelancerTheme {
-        NewProject(clients = exampleClients)
+            NewProject(
+                preselectedClient = exampleClients[0],
+                clients = exampleClients,
+                bottomBar = { BottomNavigationBar() },
+                backNavigation = {}
+            )
     }
 }
 
@@ -347,6 +351,6 @@ fun PreviewNewProject() {
 fun PreviewProject() {
     TestData()
     FreelancerTheme {
-        Project(project = exampleProjects[0])
+        Project(project = exampleProjects[0], bottomBar = { BottomNavigationBar() }, backNavigation = {})
     }
 }

@@ -65,7 +65,7 @@ class Company(var name: String, var description: String = ""): AbstractEntity() 
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun finishProject(project: Project, startDate: LocalDate, endDate: LocalDate){
+    fun finishProject(project: Project, startDate: Date, endDate: Date){
         if(projects.contains(project)){
             project.finish(startDate,endDate)
         }else{
@@ -130,6 +130,12 @@ class CompanyService(val companyRepository: CompanyRepository, val projectServic
         val company = findByID(companyID)?: throw RuntimeException("Dont know a company with ID: $companyID")
         workerService.addWorker(worker)
         company.addWorker(worker)
+    }
+
+    fun removeClient(companyID: UUID, client: Client){
+        val company = findByID(companyID)?: throw RuntimeException("Dont know a company with ID: $companyID")
+        clientService.deleteByUUID(client.uuid)
+        company.removeClient(client)
     }
 
     fun getClients(companyID: UUID) = findByID(companyID)?.clients ?: throw RuntimeException("Dont know a company with ID: $companyID")

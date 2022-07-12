@@ -9,8 +9,7 @@ val exampleCompanies = mutableListOf<Company>(
 )
 
 val exampleClients = mutableListOf<Client>(
-    Client(Fullname("Angela", "Merkel"), 12345678912, Address(51688, "Wipperfürth", "Eichendorffstr", 30),
-        exampleCompanies[0].uuid),
+    Client(Fullname("Angela", "Merkel"), 12345678912, Address(51688, "Wipperfürth", "Eichendorffstr", 30)),
     Client(Fullname("Barack", "Obama")),
     Client(Fullname("Heidi", "Klum")),
     Client(Fullname("Anthony", "Modeste")),
@@ -45,6 +44,10 @@ class TestData {
         exampleCompanies[0].addWorker(exampleWorker[2])
 
         exampleCompanies[0].addClient(exampleClients[0])
+        exampleCompanies[0].addClient(exampleClients[1])
+        exampleCompanies[0].addClient(exampleClients[2])
+        exampleCompanies[0].addClient(exampleClients[3])
+        exampleCompanies[0].addClient(exampleClients[4])
 
         exampleProjects[0].addTask(Task("Cleaning Bathroom"))
         exampleProjects[0].addTask(Task("Installing Toilet"))

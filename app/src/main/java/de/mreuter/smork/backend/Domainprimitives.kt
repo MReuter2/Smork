@@ -1,6 +1,9 @@
 package de.mreuter.smork.backend
 
-import java.util.*
+import android.os.Build
+import androidx.annotation.RequiresApi
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class Address(var postcode: Int, var city: String, var street: String, var houseNumber: Int){
     init {
@@ -36,6 +39,12 @@ class Task(val taskDescription: String){
     fun refinish(){
         isFinished = false
     }
+
+    override fun hashCode(): Int {
+        var result = taskDescription.hashCode()
+        result = 31 * result + isFinished.hashCode()
+        return result
+    }
 }
 
 class EmailAddress(emailAddress: String){
@@ -61,5 +70,12 @@ class Maintenance(val client: Client, val description: String, val date: Date){
 
     fun finish(){
         isFinished = true
+    }
+}
+
+class Date(val localDate: LocalDate){
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun toString(): String {
+        return localDate.format(DateTimeFormatter.ofPattern("dd.MM.uuuu")).toString()
     }
 }

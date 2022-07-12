@@ -38,13 +38,13 @@ fun SignIn(
         Column {
             Text(
                 text = "Sign In",
-                style = Typography.h1,
+                style = MaterialTheme.typography.h1,
                 modifier = Modifier
             )
             Spacer(modifier = Modifier.padding(2.dp))
             Text(
                 text = "Sign in to continue",
-                style = Typography.subtitle2,
+                style = MaterialTheme.typography.subtitle2,
                 modifier = Modifier.padding(horizontal = 5.dp)
             )
         }
@@ -80,7 +80,7 @@ fun SignIn(
         ) {
             Text(
                 text = "Dont have an Account?",
-                style = Typography.body1,
+                style = MaterialTheme.typography.body1,
                 modifier = Modifier
             )
             ClickableText(
@@ -107,13 +107,13 @@ fun SignUp(
         Column {
             Text(
                 text = "Sign Up",
-                style = Typography.h1,
+                style = MaterialTheme.typography.h1,
                 modifier = Modifier
             )
             Spacer(modifier = Modifier.padding(2.dp))
             Text(
                 text = "Sign up to join",
-                style = Typography.subtitle2,
+                style = MaterialTheme.typography.subtitle2,
                 modifier = Modifier.padding(horizontal = 5.dp)
             )
         }
@@ -181,7 +181,7 @@ fun SignUp(
         ) {
             Text(
                 text = "Already have an Account?",
-                style = Typography.body1
+                style = MaterialTheme.typography.body1
             )
             ClickableText(
                 text = AnnotatedString("Sign in"),
@@ -287,7 +287,7 @@ fun PreviewSignIn() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PreviewSignUp() {
     FreelancerTheme {
@@ -295,7 +295,7 @@ fun PreviewSignUp() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PreviewJoinCompany() {
     val owner = exampleOwner[0]

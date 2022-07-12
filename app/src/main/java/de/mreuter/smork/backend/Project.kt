@@ -9,13 +9,13 @@ import java.util.*
 
 class Project(var name: String, val client: Client, val tasks: MutableList<Task> = mutableListOf()): AbstractEntity() {
     var isFinished = false
-    var startDate: LocalDate? = null
-    var finishDate: LocalDate? = null
+    var startDate: Date? = null
+    var finishDate: Date? = null
     var images = mutableListOf<Image>()
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun finish(startDate: LocalDate, finishDate: LocalDate){
-        if(startDate.isBefore(finishDate)) {
+    fun finish(startDate: Date, finishDate: Date){
+        if(startDate.localDate.isBefore(finishDate.localDate)) {
             this.startDate = startDate
             this.finishDate = finishDate
             isFinished = true
@@ -62,7 +62,7 @@ class ProjectService(val projectRepository: ProjectRepository){
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun finishProject(project: Project, startDate: LocalDate, endDate: LocalDate){
+    fun finishProject(project: Project, startDate: Date, endDate: Date){
         project.finish(startDate, endDate)
         save(project)
     }

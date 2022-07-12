@@ -6,34 +6,48 @@ import androidx.annotation.RequiresApi
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import de.mreuter.smork.R
 import de.mreuter.smork.*
+import de.mreuter.smork.backend.Client
 import de.mreuter.smork.backend.EmailAddress
 import de.mreuter.smork.backend.Fullname
-import de.mreuter.smork.backend.exampleCompanies
 import de.mreuter.smork.ui.elements.BasicScaffold
 import de.mreuter.smork.ui.elements.BottomNavigationBar
 import de.mreuter.smork.ui.elements.TopBar
 import de.mreuter.smork.ui.screens.*
-import de.mreuter.smork.ui.theme.White
 import java.util.*
 
-sealed class Screen(val route: String, @DrawableRes val icons: Int? = null) {
+sealed class Screen(
+    val route: String,
+    @DrawableRes val unselectedIcon: Int? = null,
+    @DrawableRes val selectedIcon: Int? = null
+) {
     object Login : Screen("login")
     object SignIn : Screen("signIn")
     object SignUp : Screen("signUp")
     object JoinCompany : Screen("joinCompany")
 
-    object Home : Screen("home", R.drawable.ic_outline_calendar_today_24)
+    object Home : Screen(
+        "home",
+        R.drawable.ic_outline_calendar_today_24,
+        R.drawable.ic_baseline_calendar_today_24
+    )
 
-    object Company : Screen("company", R.drawable.warehouse_black_24dp)
+    object Company :
+        Screen("company", R.drawable.ic_outlined_warehouse, R.drawable.ic_baseline_warehouse)
 
-    object Clients : Screen("client_view", R.drawable.ic_outline_people_24)
+    object Clients :
+        Screen("client_view", R.drawable.ic_outline_people_24, R.drawable.ic_baseline_people_24)
 
-    object Projects : Screen("project_view", R.drawable.ic_outline_assignment_24)
+    object Projects : Screen(
+        "project_view",
+        R.drawable.ic_outline_assignment_24,
+        R.drawable.ic_baseline_assignment_24
+    )
 
     fun withArgs(vararg args: String): String {
         return buildString {
@@ -93,40 +107,28 @@ fun NavGraphBuilder.loginGraph(navController: NavController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.clientGraph(navController: NavController) {
     navigation(startDestination = Screen.Clients.route + "/clients", route = Screen.Clients.route) {
         composable(Screen.Clients.route + "/clients") {
-            Scaffold(
-                topBar = {
-                    TopBar {
-                        IconButton(
-                            onClick = {
-                                navController.navigate(Screen.Clients.route + "/newClient")
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_outline_add_24),
-                                contentDescription = null,
-                                tint = White
-                            )
-                        }
-                    }
-                },
-                bottomBar = { BottomNavigationBar(navController) }
-            ) {
-                Clients(navigateToClient = { navController.navigate(Screen.Clients.withArgs(it.uuid.toString())) })
-            }
+            Clients(
+                navigateToClient = { navController.navigate(Screen.Clients.withArgs(it.uuid.toString())) },
+                navigateToNewClient = { navController.navigate(Screen.Clients.route + "/newClient") },
+                bottomBar = { BottomNavigationBar(navController) },
+            )
         }
         composable(Screen.Clients.route + "/newClient") {
-            BasicScaffold(navController = navController) {
-                ClientCreatingView(navigateToClient = {
+            ClientCreatingView(
+                navigateToClient = {
                     navController.navigate(
                         Screen.Clients.withArgs(
                             it.uuid.toString()
                         )
                     )
-                })
-            }
+                },
+                bottomBar = { BottomNavigationBar(navController) },
+                backNavigation = { navController.popBackStack() }
+            )
         }
         composable(Screen.Clients.route + "/{clientID}?edit={edit}",
             arguments = listOf(
@@ -141,30 +143,38 @@ fun NavGraphBuilder.clientGraph(navController: NavController) {
                     stateHolder.getClientByID(UUID.fromString(it.arguments?.getString("clientID")))
                         ?: throw RuntimeException("No Client with ID: " + it.arguments?.getString("clientID"))
                 if (it.arguments?.getBoolean("edit") == false) {
-                    BasicScaffold(navController = navController) {
-                        ClientView(
-                            client = client,
-                            changeToEditView = {
-                                navController.navigate(
-                                    Screen.Clients.withArgs(
-                                        client.uuid.toString(),
-                                        "?edit=true"
-                                    )
+                    ClientView(
+                        client = client,
+                        changeToEditView = {
+                            navController.navigate(
+                                Screen.Clients.withArgs(
+                                    client.uuid.toString(),
+                                    "?edit=true"
                                 )
-                            },
-                            navigateToNewProject = { navController.navigate(Screen.Projects.route + "/newProject") }
-                        )
-                    }
+                            )
+                        },
+                        navigateToNewProject = { preselectedClient -> navController.navigate(Screen.Projects.route + "/newProject?clientID=${preselectedClient.uuid}") },
+                        navigateToProject = { project ->
+                            navController.navigate(
+                                Screen.Projects.withArgs(
+                                    project.uuid.toString()
+                                )
+                            )
+                        },
+                        bottomBar = { BottomNavigationBar(navController) },
+                        backNavigation = { navController.navigate(Screen.Clients.route) }
+                    )
                 } else {
-                    BasicScaffold(navController = navController) {
-                        ClientEditingView(
-                            client,
-                            navigateToClient = { client ->
-                                navController.navigate(
-                                    Screen.Clients.withArgs(client.uuid.toString())
-                                )
-                            })
-                    }
+                    ClientEditingView(
+                        client = client,
+                        navigateToClient = { editedClient ->
+                            navController.navigate(
+                                Screen.Clients.withArgs(editedClient.uuid.toString())
+                            )
+                        },
+                        bottomBar = { BottomNavigationBar(navController) },
+                        backNavigation = { navController.popBackStack() }
+                    )
                 }
             }
         }
@@ -173,38 +183,55 @@ fun NavGraphBuilder.clientGraph(navController: NavController) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.projectGraph(navController: NavController) {
-    navigation(startDestination = Screen.Projects.route + "/projects", route = Screen.Projects.route) {
+    navigation(
+        startDestination = Screen.Projects.route + "/projects",
+        route = Screen.Projects.route
+    ) {
         composable(Screen.Projects.route + "/projects") {
-            BasicScaffold(navController = navController) {
-                Projects(
-                    stateHolder.getProjects(),
-                    navigateToNewProject = { navController.navigate(Screen.Projects.route + "/newProject") },
-                    navigateToProject = { project ->
-                        navController.navigate(
-                            Screen.Projects.withArgs(
-                                project.uuid.toString()
-                            )
+            Projects(
+                projects = stateHolder.getProjects(),
+                navigateToNewProject = { navController.navigate(Screen.Projects.route + "/newProject") },
+                navigateToProject = { project ->
+                    navController.navigate(
+                        Screen.Projects.withArgs(
+                            project.uuid.toString()
                         )
-                    }
-                )
-            }
+                    )
+                },
+                bottomBar = { BottomNavigationBar(navController = navController) }
+            )
         }
-        composable(Screen.Projects.route + "/newProject") {
-            BasicScaffold(navController = navController) {
-                NewProject(
-                    clients = stateHolder.getClients(),
-                    navigateToProject = { project ->
-                        navController.navigate(
-                            Screen.Projects.withArgs(project.uuid.toString())
-                        )
-                    }
-                )
-            }
+        composable(Screen.Projects.route + "/newProject?clientID={clientID}",
+            arguments = listOf(
+                navArgument("clientID") {
+                    defaultValue = null
+                    nullable = true
+                }
+            )
+        ) {
+            var preselectedClient: Client? = null
+            if (it.arguments?.getString("clientID") != null)
+                preselectedClient =
+                    stateHolder.getClientByID(UUID.fromString(it.arguments?.getString("clientID")))
+            NewProject(
+                preselectedClient = preselectedClient,
+                clients = stateHolder.getClients(),
+                navigateToClient = { client ->
+                    navController.navigate(
+                        Screen.Clients.withArgs(client.uuid.toString())
+                    )
+                },
+                bottomBar = { BottomNavigationBar(navController = navController) },
+                backNavigation = { navController.popBackStack() }
+            )
         }
         composable(Screen.Projects.route + "/{projectID}") {
             val project =
                 stateHolder.getProjectByID(UUID.fromString(it.arguments?.getString("projectID")))
-            BasicScaffold(navController = navController) { Project(project) }
+            Project(
+                project = project,
+                bottomBar = { BottomNavigationBar(navController = navController) },
+                backNavigation = { navController.popBackStack() })
         }
     }
 }
@@ -212,31 +239,29 @@ fun NavGraphBuilder.projectGraph(navController: NavController) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationHost(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.Login.route) {
+    NavHost(navController = navController, startDestination = Screen.Home.route) {
         loginGraph(navController)
         clientGraph(navController)
         projectGraph(navController)
         composable(Screen.Home.route) {
-            BasicScaffold(navController = navController) {
-                Home(
-                    stateHolder.getProjects(),
-                    stateHolder.getMaintenances(),
-                    navigateToProject = { project ->
-                        navController.navigate(
-                            Screen.Projects.withArgs(
-                                project.uuid.toString()
-                            )
+            Home(
+                stateHolder.getProjects(),
+                stateHolder.getMaintenances(),
+                navigateToProject = { project ->
+                    navController.navigate(
+                        Screen.Projects.withArgs(
+                            project.uuid.toString()
                         )
-                    }
-                )
-            }
+                    )
+                },
+                bottomBar = { BottomNavigationBar(navController) }
+            )
         }
         composable(Screen.Company.route) {
-            BasicScaffold(navController = navController) {
-                YourCompany(
-                    stateHolder.usersCompany() ?: throw RuntimeException("No Company")
-                )
-            }
+            YourCompany(
+                company = stateHolder.usersCompany() ?: throw RuntimeException("No Company"),
+                bottomBar = { BottomNavigationBar(navController) }
+            )
         }
     }
 }

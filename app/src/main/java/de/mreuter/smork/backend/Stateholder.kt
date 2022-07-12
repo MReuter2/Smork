@@ -8,7 +8,7 @@ class Stateholder{
     private val workerService = WorkerService(WorkerRepository())
     private val clientService = ClientService(ClientRepository())
     private val companyService = CompanyService(CompanyRepository(), projectService, clientService, workerService, ownerService)
-    var user: Person? = null
+    var user: Person? = exampleOwner[0]
 
     fun usersCompany() = companyService.findByPersonID(user?.uuid ?: throw RuntimeException("User is null"))
 
@@ -41,6 +41,9 @@ class Stateholder{
     }
 
     fun saveClient(client: Client){
+        if(usersCompany()?.clients?.contains(client) == true){
+            companyService.removeClient(usersCompany()?.uuid ?: throw RuntimeException("Company should not be null"), client)
+        }
         companyService.addClient(usersCompany()?.uuid ?: throw RuntimeException("Mistake"), client)
     }
 
