@@ -30,21 +30,17 @@ data class Fullname(var firstname: String, var lastname: String){
 class Task(val taskDescription: String){
     var isFinished = false
 
-    override fun equals(other: Any?): Boolean {
+    /*override fun equals(other: Any?): Boolean {
         if(other is Task)
             return taskDescription.trim().uppercase() == other.taskDescription.trim().uppercase()
         return super.equals(other)
-    }
-
-    fun refinish(){
-        isFinished = false
     }
 
     override fun hashCode(): Int {
         var result = taskDescription.hashCode()
         result = 31 * result + isFinished.hashCode()
         return result
-    }
+    }*/
 }
 
 class EmailAddress(emailAddress: String){
@@ -62,6 +58,10 @@ class EmailAddress(emailAddress: String){
 
     override fun hashCode(): Int {
         return emailAddress.hashCode()
+    }
+
+    override fun toString(): String {
+        return emailAddress
     }
 }
 

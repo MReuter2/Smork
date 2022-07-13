@@ -7,6 +7,7 @@ data class Client(
     override var fullname: Fullname,
     var phonenumber: Long? = null,
     var address: Address? = null,
+    var emailAddress: EmailAddress? = null,
     val id: UUID = UUID.randomUUID()
 ): Person(fullname, id = id){
     private val projects = mutableListOf<Project>()

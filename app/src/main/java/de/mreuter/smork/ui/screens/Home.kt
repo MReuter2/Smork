@@ -32,7 +32,6 @@ fun Home(
 ) {
     BasicScaffold(bottomBar = { bottomBar() }, topBarTitle = stringResource(id = R.string.app_name)){
         BasicLazyColumn {
-            Spacer(modifier = Modifier.padding(10.dp))
             BasicCard {
                 Text(text = "Active Projects", style = MaterialTheme.typography.h2)
                 Spacer(modifier = Modifier.padding(5.dp))

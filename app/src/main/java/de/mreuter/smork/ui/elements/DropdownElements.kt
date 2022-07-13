@@ -21,7 +21,7 @@ class DropDown <T : Any>(val dropDownItems: List<T>) {
         ExposedDropMenuStateHolder(dropDownItems)
 
     @Composable
-    fun DropDownTextfield(label: String, preselectedItem: T? = null) {
+    fun DropDownTextfield(label: String, preselectedItem: T? = null, isError: Boolean = false) {
         exposedMenuStateHolder = rememberExposedMenuStateHolder(dropDownItems)
         if(preselectedItem != null && dropDownItems.contains(preselectedItem) && exposedMenuStateHolder.selectedItem == null)
             exposedMenuStateHolder.onSelectedIndex(dropDownItems.indexOf(preselectedItem))
@@ -30,8 +30,8 @@ class DropDown <T : Any>(val dropDownItems: List<T>) {
             OutlinedTextField(
                 value = exposedMenuStateHolder.value,
                 onValueChange = {},
-                label = { Column(verticalArrangement = Arrangement.Center, modifier = Modifier.height(24.dp)){ Text(text = label, style = MaterialTheme.typography.subtitle1) } },
-                enabled = false,
+                label = { Column(verticalArrangement = Arrangement.Center, modifier = Modifier.height(24.dp)){ Text(text = label) } },
+                readOnly = true,
                 trailingIcon = {
                     Icon(
                         imageVector = exposedMenuStateHolder.icon,
@@ -46,14 +46,8 @@ class DropDown <T : Any>(val dropDownItems: List<T>) {
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally)
                     .onGloballyPositioned { exposedMenuStateHolder.onSize(it.size.toSize()) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Purple1,
-                    cursorColor = Gray,
-                    focusedLabelColor = Black,
-                    unfocusedLabelColor = Black,
-                    disabledLabelColor = Black,
-                    disabledTextColor = Black
-                )
+                colors = defaultTextFieldColors(),
+                isError = isError
             )
             DropdownMenu(
                 expanded = exposedMenuStateHolder.enabled,

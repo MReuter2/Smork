@@ -20,8 +20,18 @@ val LinkBlue = Color(8, 62, 203, 153)
 @Composable
 fun defaultTextFieldColors() =
     TextFieldDefaults.outlinedTextFieldColors(
+        textColor = Black,
+        disabledTextColor = Black,
         focusedBorderColor = Purple1,
-        cursorColor = Gray,
+        disabledBorderColor = Black,
+        cursorColor = Purple1,
         focusedLabelColor = Black,
-        unfocusedLabelColor = Black
+        unfocusedLabelColor = Black,
+        disabledLabelColor = Black,
+        backgroundColor = White255,
+        errorTrailingIconColor = Red,
+        errorBorderColor = Red,
+        errorCursorColor = Red,
+        errorLabelColor = Red,
+        errorLeadingIconColor = Red
     )

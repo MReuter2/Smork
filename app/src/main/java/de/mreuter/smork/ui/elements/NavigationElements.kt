@@ -1,9 +1,6 @@
 package de.mreuter.smork.ui.elements
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -11,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -96,8 +94,9 @@ fun BottomNavigationBar(navController: NavController = rememberNavController()) 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
         navItems.forEach { screen ->
+            val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
             BottomNavigationItem(
-                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                selected = isSelected,
                 onClick = {
                     navController.navigate(screen.route){
                         popUpTo(navController.graph.findStartDestination().id){
@@ -108,7 +107,7 @@ fun BottomNavigationBar(navController: NavController = rememberNavController()) 
                 },
                 icon = {
                     if(screen.unselectedIcon != null && screen.selectedIcon != null) {
-                        if(currentDestination?.hierarchy?.any { it.route == screen.route } == true) {
+                        if(isSelected) {
                             Icon(
                                 painter = painterResource(id = screen.selectedIcon),
                                 contentDescription = null
@@ -120,7 +119,8 @@ fun BottomNavigationBar(navController: NavController = rememberNavController()) 
                             )
                         }
                     }
-                }
+                },
+                label = { Text(text = screen.title, fontWeight = if(isSelected) FontWeight.Bold else FontWeight.Light)}
             )
         }
     }

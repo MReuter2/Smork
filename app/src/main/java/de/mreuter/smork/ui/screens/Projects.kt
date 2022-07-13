@@ -1,8 +1,15 @@
 package de.mreuter.smork.ui.screens
 
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
@@ -11,10 +18,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
@@ -41,7 +51,6 @@ fun Projects(
         }}
     ){
         BasicLazyColumn {
-            Spacer(modifier = Modifier.padding(10.dp))
             BasicCard {
                 Text(text = "Active Projects", style = MaterialTheme.typography.h2)
                 Spacer(modifier = Modifier.padding(10.dp))
@@ -154,23 +163,43 @@ fun Project(project: Project, bottomBar: @Composable () -> Unit, backNavigation:
 
             ExpandableCard(title = "Tasks") { TaskListWithCheckbox(tasks = project.tasks) }
 
-            BasicCard {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Images", style = MaterialTheme.typography.h2)
-                    IconButton(
-                        onClick = { /*TODO*/ },
-                        modifier = Modifier.then(Modifier.size(25.dp))
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_baseline_chevron_right_24),
-                            contentDescription = null
-                        )
+            ExpandableCard(title = "Images") {
+                val context = LocalContext.current
+                val imageData: MutableState<Uri?> = remember { mutableStateOf(null) }
+                val launcher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.GetContent(),
+                    onResult = { imageData.value = it }
+                )
+                /*TODO: ImageView*/
+                imageData.let {
+                    val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }
+                    val uri = it.value
+                    if(uri != null){
+                        if(Build.VERSION.SDK_INT < 28){
+                            bitmap.value = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                        }else{
+                            val source = ImageDecoder.createSource(context.contentResolver, uri)
+                            bitmap.value = ImageDecoder.decodeBitmap(source)
+                        }
+
+                        bitmap.value?.let { btm ->
+                            Image(
+                                bitmap = btm.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
                     }
                 }
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_outline_add_24),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clickable {
+                            launcher.launch("image/*")
+                        }
+                    )
             }
 
             Spacer(modifier = Modifier.padding(20.dp))
@@ -206,36 +235,52 @@ fun NewProject(
         .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
     val clientDropDown = DropDown(sortedClients)
 
+    val showErrors = remember{mutableStateOf(false)}
+
     BasicScaffold(bottomBar = { bottomBar() }, topBarTitle = "New Project", backNavigation = {backNavigation()}){
         BasicLazyColumn {
-            Spacer(modifier = Modifier.padding(20.dp))
             BasicOutlinedTextField(
                 label = "Project name",
                 value = projectName.value,
-                onValueChange = { projectName.value = it }
+                onValueChange = { projectName.value = it },
+                isError = showErrors.value && projectName.value.trim() == ""
             )
             Spacer(modifier = Modifier.padding(5.dp))
-            clientDropDown.DropDownTextfield(label = "Client", preselectedItem = preselectedClient)
+            clientDropDown.DropDownTextfield(
+                label = "Client",
+                preselectedItem = preselectedClient,
+                isError = showErrors.value && clientDropDown.exposedMenuStateHolder.selectedItem == null
+            )
             Spacer(modifier = Modifier.padding(10.dp))
             BasicCard {
                 Text(
                     text = "Tasks",
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.h2,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
                 tasks.forEach {
-                    TaskRow(task = it)
+                    if(tasks.first() == it)
+                        Spacer(modifier = Modifier.padding(5.dp))
+                    TaskRow(task = it, deleteAction = {task -> tasks.remove(task) })
+                    if(tasks.last() == it)
+                        Spacer(modifier = Modifier.padding(5.dp))
                 }
                 NewTaskRow { task -> tasks.add(task) }
             }
             Spacer(modifier = Modifier.padding(10.dp))
             PrimaryButton(label = "Create") {
-                val client: Client = clientDropDown.exposedMenuStateHolder.selectedItem as Client
-                val project = Project(projectName.value, client, tasks)
-                client.addProject(project)
-                stateHolder.saveProject(project)
-                Toast.makeText(context, "Project created", Toast.LENGTH_LONG).show()
-                navigateToClient(client)
+                if(clientDropDown.exposedMenuStateHolder.selectedItem != null &&
+                        projectName.value.trim() != ""){
+                    val client: Client =
+                        clientDropDown.exposedMenuStateHolder.selectedItem as Client
+                    val project = Project(projectName.value, client, tasks)
+                    client.addProject(project)
+                    stateHolder.saveProject(project)
+                    Toast.makeText(context, "Project created", Toast.LENGTH_LONG).show()
+                    navigateToClient(client)
+                }else{
+                    showErrors.value = true
+                }
             }
             Spacer(modifier = Modifier.padding(50.dp))
         }
@@ -260,19 +305,20 @@ fun NewTaskRow(actionOnClick: (Task) -> Unit = {}) {
             ),
             modifier = Modifier
                 .height(50.dp)
-                .width(250.dp)
+                .weight(6F)
         )
         Icon(
             painter = painterResource(id = R.drawable.ic_outline_add_24),
             contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
                 .clickable {
                     if (text.text != "") {
                         actionOnClick(Task(text.text))
                         text = TextFieldValue("")
                     }
                 }
+                .weight(1F),
+            tint = MaterialTheme.colors.onSurface
         )
     }
 }
@@ -298,7 +344,8 @@ fun TaskRowWithCheckbox(task: Task) {
             .clickable(onClick = { taskCheck.value = !taskCheck.value })
     ) {
         Text(
-            text = task.taskDescription
+            text = task.taskDescription,
+            style = TextStyle(textDecoration = if(taskCheck.value) TextDecoration.LineThrough else TextDecoration.None)
         )
         Checkbox(
             checked = taskCheck.value,
@@ -311,12 +358,34 @@ fun TaskRowWithCheckbox(task: Task) {
 }
 
 @Composable
-fun TaskRow(task: Task) {
-    Column {
+fun TaskRow(task: Task, deleteAction: (Task) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
             text = task.taskDescription,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier
+                .padding(8.dp)
+                .weight(4F),
+            style = MaterialTheme.typography.subtitle1
         )
+        Icon(
+            painter = painterResource(id = R.drawable.ic_baseline_remove_24),
+            contentDescription = null,
+            modifier = Modifier
+                .clickable { deleteAction(task) }
+                .weight(2F),
+            tint = MaterialTheme.colors.onSurface,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewTaskRow(){
+    FreelancerTheme {
+        TaskRow(task = Task("Task"), deleteAction = {})
     }
 }
 

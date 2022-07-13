@@ -81,8 +81,7 @@ fun DatePicker(onDateSelected: (LocalDate) -> Unit, onDismissRequest: () -> Unit
                 ) {
                     Text(
                         text = "Cancel",
-                        style = MaterialTheme.typography.button,
-                        color = MaterialTheme.colors.onSecondary
+                        style = MaterialTheme.typography.button
                     )
                 }
 
@@ -94,8 +93,7 @@ fun DatePicker(onDateSelected: (LocalDate) -> Unit, onDismissRequest: () -> Unit
                 ) {
                     Text(
                         text = "OK",
-                        style = MaterialTheme.typography.button,
-                        color = MaterialTheme.colors.onSecondary
+                        style = MaterialTheme.typography.button
                     )
                 }
 

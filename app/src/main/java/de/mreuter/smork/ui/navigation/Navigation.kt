@@ -24,30 +24,23 @@ import java.util.*
 sealed class Screen(
     val route: String,
     @DrawableRes val unselectedIcon: Int? = null,
-    @DrawableRes val selectedIcon: Int? = null
+    @DrawableRes val selectedIcon: Int? = null,
+    val title: String = ""
 ) {
     object Login : Screen("login")
     object SignIn : Screen("signIn")
     object SignUp : Screen("signUp")
     object JoinCompany : Screen("joinCompany")
 
-    object Home : Screen(
-        "home",
-        R.drawable.ic_outline_calendar_today_24,
-        R.drawable.ic_baseline_calendar_today_24
-    )
+    object Home : Screen("home", R.drawable.ic_outline_calendar_today_24, R.drawable.ic_baseline_calendar_today_24, "Home")
 
     object Company :
-        Screen("company", R.drawable.ic_outlined_warehouse, R.drawable.ic_baseline_warehouse)
+        Screen("company", R.drawable.ic_outlined_warehouse, R.drawable.ic_baseline_warehouse, "Company")
 
     object Clients :
-        Screen("client_view", R.drawable.ic_outline_people_24, R.drawable.ic_baseline_people_24)
+        Screen("client_view", R.drawable.ic_outline_people_24, R.drawable.ic_baseline_people_24, "Clients")
 
-    object Projects : Screen(
-        "project_view",
-        R.drawable.ic_outline_assignment_24,
-        R.drawable.ic_baseline_assignment_24
-    )
+    object Projects : Screen("project_view", R.drawable.ic_outline_assignment_24, R.drawable.ic_baseline_assignment_24, "Projects")
 
     fun withArgs(vararg args: String): String {
         return buildString {

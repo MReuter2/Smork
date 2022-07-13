@@ -20,7 +20,7 @@ private val LightColorPalette = lightColors(
     background = White229,
     onBackground = Black,
     //surface = White255,
-    //onSurface = Gray,
+    onSurface = Gray,
     error = Red,
     onError = White255
 )

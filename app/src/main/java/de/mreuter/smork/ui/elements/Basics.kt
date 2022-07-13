@@ -3,7 +3,6 @@ package de.mreuter.smork.ui.elements
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
@@ -32,44 +32,34 @@ fun BasicOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
     isPassword: Boolean = false,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isError: Boolean = false
 ) {
-    if (isPassword) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(text = label) },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth(),
-            colors = defaultTextFieldColors(),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
-        )
-    } else {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(text = label) },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth(),
-            colors = defaultTextFieldColors(),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
-        )
-    }
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(text = label) },
+        singleLine = true,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth(),
+        colors = defaultTextFieldColors(),
+        visualTransformation = if (isPassword) PasswordVisualTransformation()
+        else VisualTransformation.Companion.None,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        isError = isError
+    )
 }
 
 
 @Composable
-fun ClickableRow(onClick: () -> Unit, content: @Composable () -> Unit){
+fun ClickableRow(onClick: () -> Unit, content: @Composable () -> Unit) {
     Row(
         Modifier
             .clickable {
                 onClick()
             }
             .fillMaxWidth()
-    ){
+    ) {
         content()
     }
 }
@@ -97,7 +87,7 @@ fun BasicCard(content: @Composable ColumnScope.() -> Unit) {
 @Composable
 fun ExpandableCard(title: String, content: @Composable () -> Unit) {
     val expanded by remember { mutableStateOf(false) }
-    val transactionState = remember{
+    val transactionState = remember {
         MutableTransitionState(expanded)
             .apply {
                 targetState = expanded
@@ -116,9 +106,10 @@ fun ExpandableCard(title: String, content: @Composable () -> Unit) {
                     .clickable(onClick = {
                         transactionState.targetState = !transaction.currentState
                     }),
-            ){
+            ) {
                 Text(text = title, style = MaterialTheme.typography.h2)
-                val iconId = if(!transaction.currentState) R.drawable.ic_baseline_expand_more_24 else R.drawable.ic_baseline_expand_less_24
+                val iconId =
+                    if (!transaction.currentState) R.drawable.ic_baseline_expand_more_24 else R.drawable.ic_baseline_expand_less_24
                 Icon(
                     imageVector = ImageVector.vectorResource(id = iconId),
                     contentDescription = null,
@@ -126,12 +117,12 @@ fun ExpandableCard(title: String, content: @Composable () -> Unit) {
                 )
             }
         }
-        if(transactionState.currentState){
+        if (transactionState.currentState) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 20.dp)
-            ){
+            ) {
                 content()
             }
         }
@@ -147,21 +138,21 @@ fun BasicDivider() {
 fun BasicLazyColumn(
     content: @Composable LazyItemScope.() -> Unit
 ) {
-        LazyColumn(
-            modifier = Modifier
-                .wrapContentWidth(align = Alignment.CenterHorizontally)
-                .padding(start = 20.dp, end = 20.dp)
-        ) {
-            item(content = {
-                content()
-                Spacer(modifier = Modifier.padding(100.dp))
-            })
-        }
+    LazyColumn(
+        modifier = Modifier
+            .wrapContentWidth(align = Alignment.CenterHorizontally)
+            .padding(start = 20.dp, end = 20.dp)
+    ) {
+        item(content = {
+            content()
+            Spacer(modifier = Modifier.padding(100.dp))
+        })
+    }
 }
 
 @Preview
 @Composable
-fun ExpandableCardPreview(){
+fun ExpandableCardPreview() {
     TestData()
     FreelancerTheme {
         ExpandableCard(title = "Tasks") {

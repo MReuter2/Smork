@@ -127,7 +127,6 @@ fun ClientView(
         }
     ){
         BasicLazyColumn {
-            Spacer(modifier = Modifier.padding(10.dp))
             BasicCard {
                 BasicListItem(
                     topic = "Phone number",
@@ -135,7 +134,7 @@ fun ClientView(
                 )
                 BasicDivider()
                 Spacer(modifier = Modifier.padding(15.dp))
-                BasicListItem(topic = "Email", description = "")
+                BasicListItem(topic = "Email", description = client.emailAddress?.toString() ?: "")
                 BasicDivider()
                 Spacer(modifier = Modifier.padding(15.dp))
                 BasicListItem(topic = "Address", description = client.address?.toString() ?: "")
@@ -205,6 +204,7 @@ fun ClientEditingView(
 ) {
     val firstnameValue = remember { mutableStateOf(client?.fullname?.firstname ?: String()) }
     val lastnameValue = remember { mutableStateOf(client?.fullname?.lastname ?: String()) }
+    val emailValue = remember { mutableStateOf(client?.email?.emailAddress ?: String()) }
     val postcodeValue =
         remember { mutableStateOf(client?.address?.postcode?.toString() ?: String()) }
     val cityValue = remember { mutableStateOf(client?.address?.city ?: String()) }
@@ -213,21 +213,35 @@ fun ClientEditingView(
         remember { mutableStateOf(client?.address?.houseNumber?.toString() ?: String()) }
     val phoneValue = remember { mutableStateOf(client?.phonenumber?.toString() ?: String()) }
 
+    val isError = remember { mutableStateOf(false) }
+
     val context = LocalContext.current
 
-    BasicScaffold(bottomBar = { bottomBar() }, topBarTitle = "Client Editing", backNavigation = { backNavigation() }){
+    BasicScaffold(
+        bottomBar = { bottomBar() },
+        topBarTitle = if(client != null) "Client Editing" else "Client Creating",
+        backNavigation = { backNavigation() }){
         BasicLazyColumn {
-            Spacer(modifier = Modifier.padding(20.dp))
+            Spacer(modifier = Modifier.padding(5.dp))
             BasicOutlinedTextField(
                 label = stringResource(id = R.string.firstname),
                 value = firstnameValue.value,
-                onValueChange = { firstnameValue.value = it }
+                onValueChange = { firstnameValue.value = it },
+                isError = isError.value && firstnameValue.value.trim() == ""
             )
             Spacer(modifier = Modifier.padding(5.dp))
             BasicOutlinedTextField(
                 label = stringResource(id = R.string.lastname),
                 value = lastnameValue.value,
-                onValueChange = { lastnameValue.value = it }
+                onValueChange = { lastnameValue.value = it },
+                isError = isError.value && lastnameValue.value == ""
+            )
+            Spacer(modifier = Modifier.padding(5.dp))
+            BasicOutlinedTextField(
+                label = "Email",
+                value = emailValue.value,
+                onValueChange = { emailValue.value = it },
+                keyboardType = KeyboardType.Email
             )
             Spacer(modifier = Modifier.padding(5.dp))
             Row {
@@ -287,20 +301,45 @@ fun ClientEditingView(
             )
             Spacer(modifier = Modifier.padding(15.dp))
             PrimaryButton(label = "Save") {
-                val newClient = Client(
-                    Fullname(firstnameValue.value, lastnameValue.value),
-                    phoneValue.value.toLongOrNull(),
-                    Address(
+                if(firstnameValue.value.trim() != "" && lastnameValue.value.trim() != ""){
+                    val address = if(
+                        postcodeValue.value.toIntOrNull() != null
+                        && postcodeValue.value.length == 5
+                        && cityValue.value != ""
+                        && streetValue.value != ""
+                        && housenumberValue.value.toIntOrNull() != null
+                    )
+                        Address(
                         postcodeValue.value.toIntOrNull() ?: 0,
-                        cityValue.value,
-                        streetValue.value,
-                        housenumberValue.value.toIntOrNull() ?: 0
-                    ),
-                    client?.uuid ?: UUID.randomUUID()
-                )
-                stateHolder.saveClient(newClient)
-                Toast.makeText(context, "$newClient saved", Toast.LENGTH_LONG).show()
-                navigateToClient(newClient)
+                            cityValue.value,
+                            streetValue.value,
+                            housenumberValue.value.toIntOrNull() ?: 0
+                        )
+                    else null
+                    val email = if(emailValue.value.contains("@")) EmailAddress(emailValue.value)
+                                else null
+                    if(client != null){
+                        client.fullname = Fullname(firstnameValue.value, lastnameValue.value)
+                        client.phonenumber = phoneValue.value.toLongOrNull()
+                        client.address = address
+                        client.emailAddress = email
+                        stateHolder.saveClient(client)
+                        Toast.makeText(context, "$client saved", Toast.LENGTH_LONG).show()
+                        navigateToClient(client)
+                    }else {
+                        val newClient = Client(
+                            Fullname(firstnameValue.value, lastnameValue.value),
+                            phoneValue.value.toLongOrNull(),
+                            address,
+                            email
+                        )
+                        stateHolder.saveClient(newClient)
+                        Toast.makeText(context, "$newClient saved", Toast.LENGTH_LONG).show()
+                        navigateToClient(newClient)
+                    }
+                }else{
+                    isError.value = true
+                }
             }
         }
     }
