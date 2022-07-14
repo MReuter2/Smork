@@ -1,5 +1,6 @@
 package de.mreuter.smork.backend
 
+import de.mreuter.smork.stateHolder
 import java.util.*
 
 class Stateholder{
@@ -45,6 +46,14 @@ class Stateholder{
             companyService.removeClient(usersCompany()?.uuid ?: throw RuntimeException("Company should not be null"), client)
         }
         companyService.addClient(usersCompany()?.uuid ?: throw RuntimeException("Mistake"), client)
+    }
+
+    fun updateProject(project: Project, updatedProject: Project){
+        projectService.update(project, updatedProject)
+    }
+
+    fun deleteProject(project: Project){
+        projectService.deleteByID(project.uuid)
     }
 
     fun getProjectByID(projectID: UUID) = projectService.findByID(projectID)

@@ -209,22 +209,42 @@ fun NavGraphBuilder.projectGraph(navController: NavController) {
             NewProject(
                 preselectedClient = preselectedClient,
                 clients = stateHolder.getClients(),
-                navigateToClient = { client ->
+                navigateToProject = { project ->
                     navController.navigate(
-                        Screen.Clients.withArgs(client.uuid.toString())
+                        Screen.Projects.withArgs(project.uuid.toString())
                     )
                 },
                 bottomBar = { BottomNavigationBar(navController = navController) },
                 backNavigation = { navController.popBackStack() }
             )
         }
-        composable(Screen.Projects.route + "/{projectID}") {
+        composable(Screen.Projects.route + "/{projectID}?edit={edit}",
+            arguments = listOf(
+                navArgument("edit"){
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) {
             val project =
                 stateHolder.getProjectByID(UUID.fromString(it.arguments?.getString("projectID")))
-            Project(
-                project = project,
-                bottomBar = { BottomNavigationBar(navController = navController) },
-                backNavigation = { navController.popBackStack() })
+            val edit = it.arguments?.getBoolean("edit") ?: false
+            if(!edit){
+                Project(
+                    project = project,
+                    bottomBar = { BottomNavigationBar(navController = navController) },
+                    backNavigation = { navController.navigate(Screen.Projects.route) },
+                    navigateToEditView = { navController.navigate(Screen.Projects.withArgs(project.uuid.toString() + "?edit=true")) }
+                )
+            }else{
+                ProjectEditView(
+                    project = project,
+                    clients = stateHolder.getClients(),
+                    bottomBar = { BottomNavigationBar(navController) },
+                    navigateToProjects = { navController.navigate(Screen.Projects.route + "/projects") },
+                    navigateToProject = { navController.navigate(Screen.Projects.withArgs(project.uuid.toString())) }
+                )
+            }
         }
     }
 }

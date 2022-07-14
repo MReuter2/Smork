@@ -45,14 +45,16 @@ fun TopBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         text = title,
                         color = MaterialTheme.colors.onPrimary
                     )
-                    trailingIcons()
+                    Row{
+                        trailingIcons()
+                    }
                 }
             },
             backgroundColor = MaterialTheme.colors.primary

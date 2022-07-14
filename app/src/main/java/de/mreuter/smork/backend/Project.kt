@@ -7,7 +7,7 @@ import java.time.LocalDate
 import java.util.*
 
 
-class Project(var name: String, val client: Client, val tasks: MutableList<Task> = mutableListOf()): AbstractEntity() {
+class Project(var name: String, var client: Client, val tasks: MutableList<Task> = mutableListOf()): AbstractEntity() {
     var isFinished = false
     var startDate: Date? = null
     var finishDate: Date? = null
@@ -79,6 +79,32 @@ class ProjectService(val projectRepository: ProjectRepository){
 
     fun save(project: Project){
         projectRepository.save(project)
+    }
+
+    fun update(project: Project, updatedProject: Project){
+        project.name = updatedProject.name
+        project.client = updatedProject.client
+        project.startDate = updatedProject.startDate
+        project.finishDate = updatedProject.finishDate
+        val copiedTasks = project.tasks
+        copiedTasks.forEach {
+            if(!updatedProject.tasks.contains(it))
+                project.deleteTask(it)
+        }
+        updatedProject.tasks.forEach {
+            if(!project.tasks.contains(it))
+                project.addTask(it)
+        }
+        val copiedImages = project.images
+        copiedImages.forEach {
+            if(!updatedProject.images.contains(it))
+                project.deleteImage(it)
+        }
+        updatedProject.images.forEach {
+            if(!project.images.contains(it))
+                project.addImage(it)
+        }
+        save(project)
     }
 }
 

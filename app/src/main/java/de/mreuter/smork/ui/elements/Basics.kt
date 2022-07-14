@@ -144,6 +144,7 @@ fun BasicLazyColumn(
             .padding(start = 20.dp, end = 20.dp)
     ) {
         item(content = {
+            Spacer(modifier = Modifier.padding(10.dp))
             content()
             Spacer(modifier = Modifier.padding(100.dp))
         })
