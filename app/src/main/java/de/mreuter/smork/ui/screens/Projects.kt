@@ -5,10 +5,8 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,8 +26,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
-import de.mreuter.smork.*
-import de.mreuter.smork.backend.*
+import de.mreuter.smork.backend.client.application.ClientEntity
+import de.mreuter.smork.backend.client.domain.Client
+import de.mreuter.smork.backend.core.Date
+import de.mreuter.smork.backend.core.Task
+import de.mreuter.smork.backend.project.application.ProjectEntity
+import de.mreuter.smork.backend.project.domain.Project
 import de.mreuter.smork.ui.elements.*
 import de.mreuter.smork.ui.theme.*
 
@@ -40,16 +42,28 @@ fun Projects(
     navigateToProject: (Project) -> Unit = {},
     bottomBar: @Composable () -> Unit
 ) {
-    val activeProjects = projects.filter { !it.isFinished }
-    val finishedProjects = projects.filter { it.isFinished }
+    val activeProjectEntities = mutableListOf<Project>()
+    val finishedProjectEntities = mutableListOf<Project>()
+    projects.forEach { project ->
+        if (!project.isFinished()) {
+            activeProjectEntities.add(project)
+        } else {
+            finishedProjectEntities.add(project)
+        }
+    }
 
     BasicScaffold(
         bottomBar = { bottomBar() },
         topBarTitle = "Projects",
-        trailingAppBarIcons = { IconButton(onClick = { navigateToNewProject() }) {
-            Icon(painter = painterResource(id = R.drawable.ic_outline_add_24), contentDescription = null)
-        }}
-    ){
+        trailingAppBarIcons = {
+            IconButton(onClick = { navigateToNewProject() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_outline_add_24),
+                    contentDescription = null
+                )
+            }
+        }
+    ) {
         BasicLazyColumn {
             BasicCard {
                 Text(text = "Active Projects", style = MaterialTheme.typography.h2)
@@ -57,13 +71,13 @@ fun Projects(
                 Column(
                     modifier = Modifier.padding(3.dp)
                 ) {
-                    activeProjects.forEach { project ->
+                    activeProjectEntities.forEach { project ->
                         ClickableListItem(
-                            project.name, "${project.client.fullname}"
+                            project.name, project.client.toString() //TODO CLIENT
                         ) {
                             navigateToProject(project)
                         }
-                        if (activeProjects.last() != project)
+                        if (activeProjectEntities.last() != project)
                             Divider(modifier = Modifier.padding(horizontal = 2.dp, vertical = 8.dp))
                     }
                 }
@@ -78,19 +92,14 @@ fun Projects(
                 Column(
                     modifier = Modifier.padding(3.dp)
                 ) {
-                    finishedProjects.forEach { project ->
+                    finishedProjectEntities.forEach { project ->
                         ClickableListItem(
-                            project.name, "${project.client.fullname}"
+                            project.name, project.client.toString() //TODO CLIENT
                         ) {
                             navigateToProject(project)
                         }
-                        if (finishedProjects.last() != project)
-                            Divider(
-                                modifier = Modifier.padding(
-                                    horizontal = 2.dp,
-                                    vertical = 8.dp
-                                )
-                            )
+                        if (finishedProjectEntities.last() != project)
+                            Divider(modifier = Modifier.padding(horizontal = 2.dp, vertical = 8.dp))
                     }
                 }
             }
@@ -98,13 +107,16 @@ fun Projects(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Project(project: Project, bottomBar: @Composable () -> Unit, backNavigation: () -> Unit,  navigateToEditView: (Project) -> Unit) {
+fun Project(
+    project: Project,
+    bottomBar: @Composable () -> Unit,
+    backNavigation: () -> Unit,
+    navigateToEditView: (Project) -> Unit,
+    onProjectUpdate: (Project) -> Unit
+) {
     val openStartDateDialog = remember { mutableStateOf(false) }
     val openFinishDateDialog = remember { mutableStateOf(false) }
-    val startDate = remember { mutableStateOf(project.startDate) }
-    val finishDate = remember { mutableStateOf(project.finishDate) }
 
     if (openStartDateDialog.value || openFinishDateDialog.value) {
         if (openStartDateDialog.value)
@@ -119,15 +131,18 @@ fun Project(project: Project, bottomBar: @Composable () -> Unit, backNavigation:
     BasicScaffold(
         bottomBar = { bottomBar() },
         topBarTitle = "Project",
-        backNavigation = {backNavigation()},
+        backNavigation = { backNavigation() },
         trailingAppBarIcons = {
             IconButton(
                 onClick = { navigateToEditView(project) }
             ) {
-                Icon(painter = painterResource(id = R.drawable.ic_outline_edit_24), contentDescription = null)
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_outline_edit_24),
+                    contentDescription = null
+                )
             }
         }
-    ){
+    ) {
         BasicLazyColumn {
             BasicCard {
                 Text(
@@ -135,7 +150,7 @@ fun Project(project: Project, bottomBar: @Composable () -> Unit, backNavigation:
                     style = MaterialTheme.typography.h2
                 )
                 Text(
-                    text = project.client.toString(),
+                    text = project.client.toString(), //TODO CLIENT
                     style = MaterialTheme.typography.subtitle2,
                     modifier = Modifier.padding(1.dp)
                 )
@@ -171,7 +186,7 @@ fun Project(project: Project, bottomBar: @Composable () -> Unit, backNavigation:
                 }
             }
 
-            ExpandableCard(title = "Tasks") { TaskListWithCheckbox(tasks = project.tasks) }
+            ExpandableCard(title = "Tasks") { TaskListWithCheckbox(tasks = listOf()) } //TODO TASKS
 
             ExpandableCard(title = "Images") {
                 val context = LocalContext.current
@@ -184,10 +199,11 @@ fun Project(project: Project, bottomBar: @Composable () -> Unit, backNavigation:
                 imageData.let {
                     val bitmap: MutableState<Bitmap?> = remember { mutableStateOf(null) }
                     val uri = it.value
-                    if(uri != null){
-                        if(Build.VERSION.SDK_INT < 28){
-                            bitmap.value = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                        }else{
+                    if (uri != null) {
+                        if (Build.VERSION.SDK_INT < 28) {
+                            bitmap.value =
+                                MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                        } else {
                             val source = ImageDecoder.createSource(context.contentResolver, uri)
                             bitmap.value = ImageDecoder.decodeBitmap(source)
                         }
@@ -209,22 +225,21 @@ fun Project(project: Project, bottomBar: @Composable () -> Unit, backNavigation:
                         .clickable {
                             launcher.launch("image/*")
                         }
-                    )
+                )
             }
 
             Spacer(modifier = Modifier.padding(20.dp))
 
             PrimaryButton(label = "Save") {
-                stateHolder.saveProject(project)
+                onProjectUpdate(project)
             }
 
             Spacer(modifier = Modifier.padding(10.dp))
 
-            SecondaryButton(label = "Finish") {
+            /*SecondaryButton(label = "Finish") {
                 if (startDate.value != null && finishDate.value != null) {
-                    project.finish(startDate.value!!, finishDate.value!!)
                 }
-            }
+            }*/
         }
     }
 }
@@ -235,19 +250,19 @@ fun ProjectEditView(
     clients: List<Client>,
     bottomBar: @Composable () -> Unit,
     navigateToProjects: () -> Unit,
-    navigateToProject: (Project) -> Unit
-){
-    val context = LocalContext.current
+    onProjectDelete: (Project) -> Unit,
+    onProjectUpdate: (Project) -> Unit
+) {
     val projectName = remember { mutableStateOf(project.name) }
-    val tasks = remember { mutableStateOf(project.tasks) }
+    val tasks = remember { mutableStateListOf<Task>() } //TODO TASKS
     val sortedClients = clients
         .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
     val clientDropDown = DropDown(sortedClients)
 
-    val showErrors = remember{mutableStateOf(false)}
+    val showErrors = remember { mutableStateOf(false) }
     val openDeleteDialog = remember { mutableStateOf(false) }
 
-    if(openDeleteDialog.value){
+    if (openDeleteDialog.value) {
         AlertDialog(
             onDismissRequest = {
                 openDeleteDialog.value = false
@@ -267,8 +282,7 @@ fun ProjectEditView(
                     )
                     PrimaryButton(label = "Yes") {
                         /*TODO: Deleting throw Errors*/
-                        navigateToProjects()
-                        stateHolder.deleteProject(project)
+                        onProjectDelete(project)
                     }
                 }
             }
@@ -290,7 +304,7 @@ fun ProjectEditView(
                 )
             }
         }
-    ){
+    ) {
         BasicLazyColumn {
             BasicOutlinedTextField(
                 label = "Project name",
@@ -301,7 +315,7 @@ fun ProjectEditView(
             Spacer(modifier = Modifier.padding(5.dp))
             clientDropDown.DropDownTextfield(
                 label = "Client",
-                preselectedItem = project.client,
+                preselectedItem = project.client, //TODO CLIENT
                 isError = showErrors.value && clientDropDown.exposedMenuStateHolder.selectedItem == null
             )
             Spacer(modifier = Modifier.padding(10.dp))
@@ -311,26 +325,27 @@ fun ProjectEditView(
                     style = MaterialTheme.typography.h2,
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
-                tasks.value.forEach {
-                    if(tasks.value.first() == it)
+                tasks.forEach {
+                    if (tasks.first() == it)
                         Spacer(modifier = Modifier.padding(5.dp))
-                    TaskRow(task = it, deleteAction = {task -> tasks.value.remove(task) })
-                    if(tasks.value.last() == it)
+                    TaskRow(task = it, deleteAction = { task -> tasks.remove(task) })
+                    if (tasks.last() == it)
                         Spacer(modifier = Modifier.padding(5.dp))
                 }
-                NewTaskRow { task -> tasks.value.add(task) }
+                NewTaskRow { task -> tasks.add(task) }
             }
             Spacer(modifier = Modifier.padding(10.dp))
             PrimaryButton(label = "Save") {
-                if(clientDropDown.exposedMenuStateHolder.selectedItem != null &&
-                    projectName.value.trim() != ""){
+                if (clientDropDown.exposedMenuStateHolder.selectedItem != null &&
+                    projectName.value.trim() != ""
+                ) {
                     val client: Client =
                         clientDropDown.exposedMenuStateHolder.selectedItem as Client
-                    val updatedProject = Project(projectName.value, client, tasks.value)
-                    stateHolder.updateProject(project, updatedProject)
-                    Toast.makeText(context, "Project edited", Toast.LENGTH_LONG).show()
-                    navigateToProject(project)
-                }else{
+                    project.name = projectName.value
+                    val newProject = Project(project.id, projectName.value, client, project.startDate, project.finishDate)
+                    newProject.addTasks(tasks)
+                    onProjectUpdate(project)
+                } else {
                     showErrors.value = true
                 }
             }
@@ -343,21 +358,24 @@ fun ProjectEditView(
 fun NewProject(
     preselectedClient: Client? = null,
     clients: List<Client>,
-    navigateToProject: (Project) -> Unit,
+    onProjectSave: (Project) -> Unit,
     bottomBar: @Composable () -> Unit,
     backNavigation: () -> Unit
 ) {
-    val context = LocalContext.current
     val projectName = remember { mutableStateOf(String()) }
     val tasks = remember { mutableStateListOf<Task>() }
 
     val sortedClients = clients
-        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
+
     val clientDropDown = DropDown(sortedClients)
 
-    val showErrors = remember{mutableStateOf(false)}
+    val showErrors = remember { mutableStateOf(false) }
 
-    BasicScaffold(bottomBar = { bottomBar() }, topBarTitle = "New Project", backNavigation = {backNavigation()}){
+    BasicScaffold(
+        bottomBar = { bottomBar() },
+        topBarTitle = "New Project",
+        backNavigation = { backNavigation() }) {
         BasicLazyColumn {
             BasicOutlinedTextField(
                 label = "Project name",
@@ -379,26 +397,26 @@ fun NewProject(
                     modifier = Modifier.padding(bottom = 5.dp)
                 )
                 tasks.forEach {
-                    if(tasks.first() == it)
+                    if (tasks.first() == it)
                         Spacer(modifier = Modifier.padding(5.dp))
-                    TaskRow(task = it, deleteAction = {task -> tasks.remove(task) })
-                    if(tasks.last() == it)
+                    TaskRow(task = it, deleteAction = { task -> tasks.remove(task) })
+                    if (tasks.last() == it)
                         Spacer(modifier = Modifier.padding(5.dp))
                 }
                 NewTaskRow { task -> tasks.add(task) }
             }
             Spacer(modifier = Modifier.padding(10.dp))
             PrimaryButton(label = "Create") {
-                if(clientDropDown.exposedMenuStateHolder.selectedItem != null &&
-                        projectName.value.trim() != ""){
+                if (clientDropDown.exposedMenuStateHolder.selectedItem != null &&
+                    projectName.value.trim() != ""
+                ) {
                     val client: Client =
                         clientDropDown.exposedMenuStateHolder.selectedItem as Client
-                    val project = Project(projectName.value, client, tasks)
-                    client.addProject(project)
-                    stateHolder.saveProject(project)
-                    Toast.makeText(context, "Project created", Toast.LENGTH_LONG).show()
-                    navigateToProject(project)
-                }else{
+                    val project =
+                        Project(name = projectName.value, client = client)
+                    project.addTasks(tasks)
+                    onProjectSave(project)
+                } else {
                     showErrors.value = true
                 }
             }
@@ -449,7 +467,7 @@ fun TaskListWithCheckbox(tasks: List<Task>) {
         TaskRowWithCheckbox(task = it)
         if (it != tasks.last()) {
             BasicDivider()
-        }else{
+        } else {
             Spacer(modifier = Modifier.padding(5.dp))
         }
     }
@@ -468,7 +486,7 @@ fun TaskRowWithCheckbox(task: Task) {
     ) {
         Text(
             text = task.taskDescription,
-            style = TextStyle(textDecoration = if(taskCheck.value) TextDecoration.LineThrough else TextDecoration.None)
+            style = TextStyle(textDecoration = if (taskCheck.value) TextDecoration.LineThrough else TextDecoration.None)
         )
         Checkbox(
             checked = taskCheck.value,
@@ -506,19 +524,18 @@ fun TaskRow(task: Task, deleteAction: (Task) -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewTaskRow(){
-    FreelancerTheme {
+fun PreviewTaskRow() {
+    SmorkTheme {
         TaskRow(task = Task("Task"), deleteAction = {})
     }
 }
 
-@Preview
+/*@Preview
 @Composable
 fun PreviewProjects() {
-    TestData()
-    FreelancerTheme {
+    SmorkTheme {
         Projects(
-            projects = exampleProjects,
+            projectEntities = exampleProjectEntities,
             bottomBar = { BottomNavigationBar() }
         )
     }
@@ -527,14 +544,14 @@ fun PreviewProjects() {
 @Preview
 @Composable
 fun PreviewNewProject() {
-    FreelancerTheme {
-            NewProject(
-                preselectedClient = exampleClients[0],
-                clients = exampleClients,
-                bottomBar = { BottomNavigationBar() },
-                backNavigation = {},
-                navigateToProject = {}
-            )
+    SmorkTheme {
+        NewProject(
+            preselectedClientEntityEntity = exampleClientEntityEntities[0],
+            clientEntityEntities = exampleClientEntityEntities,
+            bottomBar = { BottomNavigationBar() },
+            backNavigation = {},
+            onProjectSave = {}
+        )
     }
 }
 
@@ -542,8 +559,13 @@ fun PreviewNewProject() {
 @Preview
 @Composable
 fun PreviewProject() {
-    TestData()
-    FreelancerTheme {
-        Project(project = exampleProjects[0], bottomBar = { BottomNavigationBar() }, backNavigation = {}, navigateToEditView = {})
+    SmorkTheme {
+        Project(
+            projectEntity = exampleProjectEntities[0],
+            bottomBar = { BottomNavigationBar() },
+            backNavigation = {},
+            navigateToEditView = {},
+            onProjectUpdate = {}
+        )
     }
-}
+}*/

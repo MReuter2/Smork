@@ -1,5 +1,6 @@
 package de.mreuter.smork
 
+import android.app.Application
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,43 +8,57 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import de.mreuter.smork.backend.*
+import de.mreuter.smork.backend.database.MainViewModel
 import de.mreuter.smork.ui.navigation.*
 import de.mreuter.smork.ui.theme.*
 
 class MainActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            FreelancerTheme {
+            SmorkTheme {
                 Surface{
-                    MainContent()
+                    val owner = LocalViewModelStoreOwner.current
+                    owner?.let {
+                        val viewModel: MainViewModel = viewModel(
+                            it,
+                            "MainViewModel",
+                            MainViewModelFactory(
+                                LocalContext.current.applicationContext as Application
+                            )
+                        )
+                        MainContent(viewModel)
+                    }
                 }
             }
         }
     }
 }
 
-val stateHolder = Stateholder()
-
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainContent() {
-    val navController = rememberNavController()
-    TestData()
+fun MainContent(viewModel: MainViewModel) {
     Surface {
-        NavigationHost(navController)
+        NavigationHost(
+            viewModel = viewModel
+        )
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview
-@Composable
-fun MainContentPreview() {
-    FreelancerTheme {
-        MainContent()
+class MainViewModelFactory(var application: Application): ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            return MainViewModel(application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
+
+
 }

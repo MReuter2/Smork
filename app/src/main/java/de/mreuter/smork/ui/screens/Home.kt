@@ -1,31 +1,20 @@
 package de.mreuter.smork.ui.screens
 
-import android.content.res.Configuration.UI_MODE_NIGHT_NO
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
-import de.mreuter.smork.backend.Date
-import de.mreuter.smork.backend.Maintenance
-import de.mreuter.smork.backend.Project
-import de.mreuter.smork.backend.exampleClients
-import de.mreuter.smork.backend.exampleProjects
+import de.mreuter.smork.backend.core.Maintenance
+import de.mreuter.smork.backend.project.application.ProjectEntity
+import de.mreuter.smork.backend.project.domain.Project
 import de.mreuter.smork.ui.elements.*
-import de.mreuter.smork.ui.theme.FreelancerTheme
-import de.mreuter.smork.ui.theme.Typography
-import java.time.LocalDate
-import java.util.*
 
 @Composable
 fun Home(
-    activeProjects: List<Project>,
+    projects: List<Project>,
     activeMaintenances: List<Maintenance>,
     navigateToProject: (Project) -> Unit = {},
     bottomBar: @Composable () -> Unit
@@ -38,14 +27,14 @@ fun Home(
                 Column(
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    activeProjects.forEach { project ->
+                    projects.forEach { project ->
                         ClickableListItem(
                             project.name,
-                            "${project.client.fullname}"
+                            project.client.toString() //TODO
                         ) {
                             navigateToProject(project)
                         }
-                        if (project != activeProjects.last())
+                        if (project != projects.last())
                             BasicDivider()
                     }
                 }
@@ -73,15 +62,15 @@ fun Home(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+/*@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 fun HomePreview() {
-    FreelancerTheme {
+    SmorkTheme {
         Home(
-            activeProjects = exampleProjects,
-            activeMaintenances = listOf(Maintenance(exampleClients[0], "Ma", Date(LocalDate.now()))),
+            projectEntities = exampleProjectEntities,
+            activeMaintenances = listOf(Maintenance(exampleClientEntityEntities[0], "Ma", Date(LocalDate.now()))),
             bottomBar = { BottomNavigationBar() }
         )
     }
-}
+}*/

@@ -67,7 +67,7 @@ fun SecondaryButton(label: String, onClick: () -> Unit) {
 @Preview
 @Composable
 fun ButtonPreview(){
-    FreelancerTheme {
+    SmorkTheme {
         Column {
             PrimaryButton(label = "Test Button") {
 

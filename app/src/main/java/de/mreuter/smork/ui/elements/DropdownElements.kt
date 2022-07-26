@@ -11,7 +11,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import de.mreuter.smork.backend.exampleProjects
+import de.mreuter.smork.exampleProjects
 import de.mreuter.smork.ui.ExposedDropMenuStateHolder
 import de.mreuter.smork.ui.rememberExposedMenuStateHolder
 import de.mreuter.smork.ui.theme.*
@@ -73,9 +73,7 @@ class DropDown <T : Any>(val dropDownItems: List<T>) {
 @Preview(showBackground = true)
 @Composable
 fun DropDownPreview(){
-    FreelancerTheme {
-        DropDown(
-            exampleProjects
-        ).DropDownTextfield(label = "Projects")
+    SmorkTheme {
+        DropDown(exampleProjects).DropDownTextfield(label = "Projects")
     }
 }

@@ -1,31 +1,19 @@
 package de.mreuter.smork.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import de.mreuter.smork.backend.*
-import de.mreuter.smork.stateHolder
+import de.mreuter.smork.backend.company.application.CompanyEntity
 import de.mreuter.smork.ui.elements.BasicLazyColumn
 import de.mreuter.smork.ui.elements.BasicOutlinedTextField
 import de.mreuter.smork.ui.elements.PrimaryButton
-import de.mreuter.smork.ui.navigation.Screen
 import de.mreuter.smork.ui.theme.*
-import java.util.*
 
-
+/*
 @Composable
 fun SignIn(
     navigateToSignUp: () -> Unit = {},
@@ -191,13 +179,10 @@ fun SignUp(
         }
     }
 }
-
+*/
 @Composable
 fun JoinCompany(
-    fullname: Fullname,
-    emailAddress: EmailAddress?,
-    phoneNumber: Long?,
-    navigateToHome: () -> Unit = {}
+    onCompanySave: (CompanyEntity) -> Unit
 ) {
     val companyIdValue = remember { mutableStateOf(String()) }
     val nameValue = remember { mutableStateOf(String()) }
@@ -226,14 +211,14 @@ fun JoinCompany(
         )
         Spacer(modifier = Modifier.padding(15.dp))
         PrimaryButton(label = "Join") {
-            val company = stateHolder.getCompanyByID(UUID.fromString(companyIdValue.value))
+            /*val company = stateHolder.getCompanyByID(UUID.fromString(companyIdValue.value))
             if (company != null) {
                 val worker = Worker(fullname, emailAddress, phoneNumber)
                 company.addWorker(worker)
                 stateHolder.saveCompany(company)
                 stateHolder.user = worker
                 navigateToHome()
-            }
+            }*/
         }
         Divider(modifier = Modifier.padding(top = 40.dp, bottom = 20.dp))
         Column {
@@ -263,22 +248,15 @@ fun JoinCompany(
         )
         Spacer(modifier = Modifier.padding(15.dp))
         PrimaryButton(label = "Create") {
-            val newCompany = Company(nameValue.value, descriptionValue.value)
-            val owner = Owner(
-                fullname,
-                emailAddress
-            )
-            stateHolder.user = owner
-            newCompany.addOwner(owner)
-            stateHolder.saveCompany(newCompany)
-            navigateToHome()
+            val newCompanyEntity = CompanyEntity(name = nameValue.value, description = descriptionValue.value)
+            onCompanySave(newCompanyEntity)
         }
 
         Spacer(modifier = Modifier.padding(150.dp))
 
     }
 }
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun PreviewSignIn() {
@@ -302,4 +280,4 @@ fun PreviewJoinCompany() {
     FreelancerTheme {
         JoinCompany(owner.fullname, owner.email, owner.phonenumber)
     }
-}
+}*/

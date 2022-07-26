@@ -7,19 +7,21 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import de.mreuter.smork.*
-import de.mreuter.smork.backend.*
+import de.mreuter.smork.backend.company.domain.Company
+import de.mreuter.smork.backend.owner.application.OwnerEntity
+import de.mreuter.smork.backend.owner.domain.Owner
+import de.mreuter.smork.backend.worker.application.WorkerEntity
+import de.mreuter.smork.backend.worker.domain.Worker
 import de.mreuter.smork.ui.elements.*
-import de.mreuter.smork.ui.navigation.*
-import de.mreuter.smork.ui.theme.FreelancerTheme
-import de.mreuter.smork.ui.theme.Typography
 
 @Composable
-fun YourCompany(company: Company, bottomBar: @Composable () -> Unit) {
+fun YourCompany(
+    company: Company,
+    owner: List<Owner>,
+    worker: List<Worker>,
+    bottomBar: @Composable () -> Unit
+) {
     BasicScaffold(bottomBar = { bottomBar() }, topBarTitle = "Your Company"){
         BasicLazyColumn {
             BasicCard {
@@ -42,10 +44,11 @@ fun YourCompany(company: Company, bottomBar: @Composable () -> Unit) {
                 modifier = Modifier.padding(top = 15.dp)
             )
             BasicCard {
-                val sortedOwner = company.owner.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
+                val sortedOwner = owner
+                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
                 sortedOwner.forEach { currentOwner ->
                     ClickableListItem(
-                        subtitle = "${currentOwner.fullName}",
+                        subtitle = "${currentOwner.fullname}",
                         action = {
                             /*TODO: Something to watch ownerdetails*/
                         }
@@ -60,10 +63,10 @@ fun YourCompany(company: Company, bottomBar: @Composable () -> Unit) {
                 modifier = Modifier.padding(top = 15.dp)
             )
             BasicCard {
-                val sortedWorker = company.worker.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
+                val sortedWorker = worker.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
                 sortedWorker.forEach { currentWorker ->
                     ClickableListItem(
-                        subtitle = "${currentWorker.fullName}",
+                        subtitle = "${currentWorker.fullname}",
                         action = {
                             /*TODO: Something to watch workerdetails*/
                         }
@@ -77,22 +80,25 @@ fun YourCompany(company: Company, bottomBar: @Composable () -> Unit) {
 }
 
 @Composable
-fun WorkerView(worker: Worker, edit: Boolean = false) {
+fun WorkerView(workerEntity: WorkerEntity, edit: Boolean = false) {
 
 }
 
 @Composable
-fun OwnerView(owner: Owner, edit: Boolean = false) {
+fun OwnerView(ownerEntity: OwnerEntity, edit: Boolean = false) {
 
 }
 
 
-@Preview
+/*@Preview
 @Composable
 fun PreviewYourCompany() {
-    TestData()
     val company = exampleCompanies[0]
-    FreelancerTheme {
-            YourCompany(company) { BottomNavigationBar(rememberNavController()) }
+    SmorkTheme {
+            YourCompany(
+                companyEntity = company,
+                ownerEntity = exampleOwnerEntities.filter { it.companyId == company.id },
+                workerEntity = exampleWorkerEntities.filter { it.companyId == company.id }
+            ) { BottomNavigationBar(rememberNavController()) }
     }
-}
+}*/

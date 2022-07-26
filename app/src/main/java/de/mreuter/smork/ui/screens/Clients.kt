@@ -7,10 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,12 +17,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
-import androidx.navigation.compose.rememberNavController
-import de.mreuter.smork.*
 import de.mreuter.smork.R
 import de.mreuter.smork.backend.*
+import de.mreuter.smork.backend.client.application.ClientEntity
+import de.mreuter.smork.backend.client.domain.Client
+import de.mreuter.smork.backend.core.Address
+import de.mreuter.smork.backend.core.EmailAddress
+import de.mreuter.smork.backend.core.Fullname
+import de.mreuter.smork.backend.project.domain.Project
+import de.mreuter.smork.exampleClients
 import de.mreuter.smork.ui.elements.*
-import de.mreuter.smork.ui.navigation.Screen
 import de.mreuter.smork.ui.theme.*
 import java.util.*
 
@@ -34,79 +35,80 @@ import java.util.*
 fun Clients(
     navigateToClient: (Client) -> Unit = {},
     navigateToNewClient: () -> Unit = {},
+    clients: List<Client>?,
     bottomBar: @Composable () -> Unit
 ) {
-    val sortedClients = stateHolder.getClients()
-        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
-        BasicScaffold(
-            bottomBar = { bottomBar() },
-            topBarTitle = "Clients",
-            trailingAppBarIcons = {
-                IconButton(
-                    onClick = {
-                        navigateToNewClient()
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_outline_add_24),
-                        contentDescription = null,
-                        tint = MaterialTheme.colors.onPrimary
-                    )
+
+    val sortedClients = clients
+                ?.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
+    BasicScaffold(
+        bottomBar = { bottomBar() },
+        topBarTitle = "Clients",
+        trailingAppBarIcons = {
+            IconButton(
+                onClick = {
+                    navigateToNewClient()
                 }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_outline_add_24),
+                    contentDescription = null,
+                    tint = MaterialTheme.colors.onPrimary
+                )
             }
-        ){
-            BasicLazyColumn {
-                var lastFirstLetter = '-'
-                var currentList = mutableListOf<Client>()
-                val clientsDividedByFirstLetter = mutableListOf<List<Client>>()
-                val firstletters = mutableListOf<String>()
-                sortedClients.forEach { client ->
-                    val currentFirstLetter = client.fullname.lastname[0]
-                    if (currentFirstLetter == lastFirstLetter) {
-                        currentList.add(client)
-                    } else
-                        if (currentFirstLetter != lastFirstLetter) {
-                            firstletters.add(currentFirstLetter.uppercase())
-                            if (currentList.isNotEmpty())
-                                clientsDividedByFirstLetter.add(currentList)
-                            lastFirstLetter = currentFirstLetter
-                            currentList = mutableListOf(client)
+        }
+    ) {
+        BasicLazyColumn {
+            var lastFirstLetter = '-'
+            var currentList = mutableListOf<Client>()
+            val clientsDividedByFirstLetter = mutableListOf<List<Client>>()
+            val firstletters = mutableListOf<String>()
+            sortedClients?.forEach { client ->
+                val currentFirstLetter = client.fullname.lastname[0]
+                if (currentFirstLetter == lastFirstLetter) {
+                    currentList.add(client)
+                } else
+                    if (currentFirstLetter != lastFirstLetter) {
+                        firstletters.add(currentFirstLetter.uppercase())
+                        if (currentList.isNotEmpty())
+                            clientsDividedByFirstLetter.add(currentList)
+                        lastFirstLetter = currentFirstLetter
+                        currentList = mutableListOf(client)
+                    }
+                if (sortedClients.last() == client && currentList.isNotEmpty())
+                    clientsDividedByFirstLetter.add(currentList)
+            }
+            firstletters.forEach { letter ->
+                Text(
+                    text = letter,
+                    style = MaterialTheme.typography.subtitle1,
+                    modifier = Modifier.padding(top = 15.dp)
+                )
+                BasicCard {
+                    clientsDividedByFirstLetter[firstletters.indexOf(letter)].forEach { client ->
+                        if (client.fullname.lastname[0].uppercase() == letter) {
+                            ClickableListItem(
+                                subtitle = client.fullname.toString(),
+                                action = {
+                                    navigateToClient(client)
+                                }
+                            )
                         }
-                    if (sortedClients.last() == client && currentList.isNotEmpty())
-                        clientsDividedByFirstLetter.add(currentList)
-                }
-                firstletters.forEach { letter ->
-                    Text(
-                        text = letter,
-                        style = MaterialTheme.typography.subtitle1,
-                        modifier = Modifier.padding(top = 15.dp)
-                    )
-                    BasicCard {
-                        clientsDividedByFirstLetter[firstletters.indexOf(letter)].forEach { client ->
-                            if (client.fullname.lastname[0].toString() == letter) {
-                                ClickableListItem(
-                                    subtitle = client.fullname.toString(),
-                                    action = {
-                                        navigateToClient(client)
-                                    }
-                                )
-                            }
-                            if (client != clientsDividedByFirstLetter[firstletters.indexOf(letter)].last()
-                            ) {
-                                BasicDivider()
-                            }
+                        if (client != clientsDividedByFirstLetter[firstletters.indexOf(letter)].last()
+                        ) {
+                            BasicDivider()
                         }
                     }
                 }
             }
         }
+    }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ClientView(
     client: Client,
-    changeToEditView: (Client) -> Unit = {},
+    navigateToEditView: (Client) -> Unit = {},
     navigateToNewProject: (Client) -> Unit = {},
     navigateToProject: (Project) -> Unit = {},
     bottomBar: @Composable () -> Unit,
@@ -114,10 +116,10 @@ fun ClientView(
 ) {
     BasicScaffold(
         bottomBar = { bottomBar() },
-        topBarTitle = "${ client.fullname }",
+        topBarTitle = "${client.fullname}",
         backNavigation = backNavigation,
         trailingAppBarIcons = {
-            IconButton(onClick = { changeToEditView(client) }) {
+            IconButton(onClick = { navigateToEditView(client) }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_outline_edit_24),
                     contentDescription = null,
@@ -125,7 +127,7 @@ fun ClientView(
                 )
             }
         }
-    ){
+    ) {
         BasicLazyColumn {
             BasicCard {
                 BasicListItem(
@@ -157,7 +159,7 @@ fun ClientView(
                     }
                 }
                 Spacer(modifier = Modifier.padding(5.dp))
-                val maintenances = client.getMaintenances()
+                val maintenances = client.maintenances
                 maintenances.forEach {
                     ClickableListItem(it.date.toString(), it.description) {
 
@@ -184,8 +186,8 @@ fun ClientView(
                     }
                 }
                 Spacer(modifier = Modifier.padding(5.dp))
-                client.getProjects().forEach {
-                    ClickableListItem(it.name, if (it.isFinished) "Finished" else "Active") {
+                client.projects.forEach {
+                    ClickableListItem(it.name, if (it.isFinished()) "Finished" else "Active") {
                         navigateToProject(it)
                     }
                     BasicDivider()
@@ -198,13 +200,13 @@ fun ClientView(
 @Composable
 fun ClientEditingView(
     client: Client? = null,
-    navigateToClient: (Client) -> Unit = {},
+    onClientSave: (Client) -> Unit,
     bottomBar: @Composable () -> Unit,
     backNavigation: () -> Unit = {}
 ) {
     val firstnameValue = remember { mutableStateOf(client?.fullname?.firstname ?: String()) }
     val lastnameValue = remember { mutableStateOf(client?.fullname?.lastname ?: String()) }
-    val emailValue = remember { mutableStateOf(client?.email?.emailAddress ?: String()) }
+    val emailValue = remember { mutableStateOf(client?.emailAddress?.emailAddress ?: String()) }
     val postcodeValue =
         remember { mutableStateOf(client?.address?.postcode?.toString() ?: String()) }
     val cityValue = remember { mutableStateOf(client?.address?.city ?: String()) }
@@ -219,8 +221,8 @@ fun ClientEditingView(
 
     BasicScaffold(
         bottomBar = { bottomBar() },
-        topBarTitle = if(client != null) "Client Editing" else "Client Creating",
-        backNavigation = { backNavigation() }){
+        topBarTitle = if (client != null) "Client Editing" else "Client Creating",
+        backNavigation = { backNavigation() }) {
         BasicLazyColumn {
             Spacer(modifier = Modifier.padding(5.dp))
             BasicOutlinedTextField(
@@ -301,66 +303,47 @@ fun ClientEditingView(
             )
             Spacer(modifier = Modifier.padding(15.dp))
             PrimaryButton(label = "Save") {
-                if(firstnameValue.value.trim() != "" && lastnameValue.value.trim() != ""){
-                    val address = if(
+                if (firstnameValue.value.trim() != "" && lastnameValue.value.trim() != "") {
+                    val address = if (
                         postcodeValue.value.toIntOrNull() != null
                         && postcodeValue.value.length == 5
                         && cityValue.value != ""
                         && streetValue.value != ""
                         && housenumberValue.value.toIntOrNull() != null
-                    )
+                    ) {
                         Address(
-                        postcodeValue.value.toIntOrNull() ?: 0,
+                            postcodeValue.value.toIntOrNull() ?: 0,
                             cityValue.value,
                             streetValue.value,
                             housenumberValue.value.toIntOrNull() ?: 0
                         )
-                    else null
-                    val email = if(emailValue.value.contains("@")) EmailAddress(emailValue.value)
-                                else null
-                    if(client != null){
-                        client.fullname = Fullname(firstnameValue.value, lastnameValue.value)
-                        client.phonenumber = phoneValue.value.toLongOrNull()
-                        client.address = address
-                        client.emailAddress = email
-                        stateHolder.saveClient(client)
-                        Toast.makeText(context, "$client saved", Toast.LENGTH_LONG).show()
-                        navigateToClient(client)
-                    }else {
-                        val newClient = Client(
-                            Fullname(firstnameValue.value, lastnameValue.value),
-                            phoneValue.value.toLongOrNull(),
-                            address,
-                            email
-                        )
-                        stateHolder.saveClient(newClient)
-                        Toast.makeText(context, "$newClient saved", Toast.LENGTH_LONG).show()
-                        navigateToClient(newClient)
+                    } else {
+                        null
                     }
-                }else{
+
+                    val email = if (emailValue.value.contains("@")) EmailAddress(emailValue.value) else null
+
+                    val newClient = Client(
+                        id = client?.id ?: UUID.randomUUID(),
+                        fullname = Fullname(firstnameValue.value, lastnameValue.value),
+                        phonenumber = phoneValue.value.toLongOrNull(),
+                        address = address,
+                        emailAddress = email
+                    )
+                    onClientSave(newClient)
+                    Toast.makeText(context, "$newClient saved", Toast.LENGTH_LONG).show()
+                } else {
                     isError.value = true
                 }
             }
         }
     }
 }
-
-@Composable
-fun ClientCreatingView(navigateToClient: (Client) -> Unit = {}, bottomBar: @Composable () -> Unit, backNavigation: () -> Unit = {}) {
-    ClientEditingView (
-        navigateToClient = { navigateToClient(it) },
-        bottomBar = { bottomBar() },
-        backNavigation = { backNavigation() }
-    )
-}
-
-@Preview
+/*@Preview
 @Composable
 fun PreviewClients() {
-    TestData()
-    stateHolder.user = exampleOwner[0]
-    FreelancerTheme {
-        Clients(bottomBar = { BottomNavigationBar() })
+    SmorkTheme {
+        Clients(bottomBar = { BottomNavigationBar() }, liveClients = exampleClients)
     }
 }
 
@@ -368,29 +351,34 @@ fun PreviewClients() {
 @Preview(showBackground = true)
 @Composable
 fun PeviewClientView() {
-    FreelancerTheme {
-        ClientView(client = exampleClients[0], bottomBar = { BottomNavigationBar() })
+    SmorkTheme {
+        ClientView(
+            client = exampleClients[0],
+            clientsProjects = exampleProjects.filter { it.clientId == exampleClients[0].id },
+            bottomBar = { BottomNavigationBar() }
+        )
     }
-}
+}*/
 
 @Preview
 @Composable
 fun PreviewNewClient() {
-    FreelancerTheme {
-        ClientCreatingView(bottomBar = { BottomNavigationBar() })
+    SmorkTheme {
+        ClientEditingView(
+            bottomBar = { BottomNavigationBar() },
+            onClientSave = {}
+        )
     }
 }
 
 @Preview
 @Composable
 fun PreviewClientEditView() {
-    val navController = rememberNavController()
-    val client = Client(Fullname("Barack", "Obama"))
-    FreelancerTheme {
-            ClientEditingView(
-                client = client,
-                navigateToClient = { navController.navigate(Screen.Clients.withArgs(it.uuid.toString())) },
-                bottomBar = { BottomNavigationBar(navController) }
-            )
+    SmorkTheme {
+        ClientEditingView(
+            client = exampleClients[0],
+            bottomBar = { BottomNavigationBar() },
+            onClientSave = {}
+        )
     }
 }

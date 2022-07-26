@@ -20,8 +20,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
-import de.mreuter.smork.backend.TestData
-import de.mreuter.smork.backend.exampleProjects
 import de.mreuter.smork.ui.screens.TaskListWithCheckbox
 import de.mreuter.smork.ui.theme.*
 
@@ -154,10 +152,9 @@ fun BasicLazyColumn(
 @Preview
 @Composable
 fun ExpandableCardPreview() {
-    TestData()
-    FreelancerTheme {
+    SmorkTheme {
         ExpandableCard(title = "Tasks") {
-            TaskListWithCheckbox(tasks = exampleProjects[0].tasks)
+            TaskListWithCheckbox(tasks = listOf())
         }
     }
 }

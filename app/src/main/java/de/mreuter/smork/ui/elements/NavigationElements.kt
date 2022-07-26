@@ -18,7 +18,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import de.mreuter.smork.R
 import de.mreuter.smork.ui.navigation.Screen
-import de.mreuter.smork.ui.theme.FreelancerTheme
+import de.mreuter.smork.ui.theme.SmorkTheme
 
 @Composable
 fun TopBar(
@@ -156,7 +156,7 @@ fun BasicScaffold(
 @Preview
 @Composable
 fun PreviewTopBar() {
-    FreelancerTheme {
+    SmorkTheme {
         TopBar(stringResource(R.string.app_name))
     }
 }
@@ -164,7 +164,7 @@ fun PreviewTopBar() {
 @Preview
 @Composable
 fun PreviewBottomBar() {
-    FreelancerTheme {
+    SmorkTheme {
         BottomNavigationBar(rememberNavController())
     }
 }

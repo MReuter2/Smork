@@ -8,8 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.mreuter.smork.ui.theme.FreelancerTheme
-import de.mreuter.smork.ui.theme.Typography
+import de.mreuter.smork.ui.theme.SmorkTheme
 
 @Composable
 fun BasicListItem(topic: String? = null, description: String? = null) {
@@ -45,7 +44,7 @@ fun ClickableListItem(topic: String? = null, subtitle: String? = null, action: (
 @Preview
 @Composable
 fun ListPreview(){
-    FreelancerTheme {
+    SmorkTheme {
 
     }
 }

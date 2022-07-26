@@ -1,7 +1,6 @@
-package de.mreuter.smork.backend
+package de.mreuter.smork.backend.core
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import de.mreuter.smork.backend.client.application.ClientEntity
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -29,18 +28,6 @@ data class Fullname(var firstname: String, var lastname: String){
 
 class Task(val taskDescription: String){
     var isFinished = false
-
-    /*override fun equals(other: Any?): Boolean {
-        if(other is Task)
-            return taskDescription.trim().uppercase() == other.taskDescription.trim().uppercase()
-        return super.equals(other)
-    }
-
-    override fun hashCode(): Int {
-        var result = taskDescription.hashCode()
-        result = 31 * result + isFinished.hashCode()
-        return result
-    }*/
 }
 
 class EmailAddress(emailAddress: String){
@@ -65,7 +52,7 @@ class EmailAddress(emailAddress: String){
     }
 }
 
-class Maintenance(val client: Client, val description: String, val date: Date){
+class Maintenance(val clientEntity: ClientEntity, val description: String, val date: Date){
     var isFinished = false
 
     fun finish(){
@@ -74,7 +61,6 @@ class Maintenance(val client: Client, val description: String, val date: Date){
 }
 
 class Date(val localDate: LocalDate){
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun toString(): String {
         return localDate.format(DateTimeFormatter.ofPattern("dd.MM.uuuu")).toString()
     }

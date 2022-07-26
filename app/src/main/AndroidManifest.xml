@@ -10,12 +10,11 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/applogo"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Freelancer">
+        android:theme="@style/Theme.Smork">
         <activity
             android:name="de.mreuter.smork.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Freelancer">
+            android:theme="@style/Theme.Smork">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

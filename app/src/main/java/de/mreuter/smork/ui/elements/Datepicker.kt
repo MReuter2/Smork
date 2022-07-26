@@ -20,11 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import de.mreuter.smork.ui.theme.FreelancerTheme
+import de.mreuter.smork.ui.theme.SmorkTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DatePicker(onDateSelected: (LocalDate) -> Unit, onDismissRequest: () -> Unit) {
     val selDate = remember { mutableStateOf(LocalDate.now()) }
@@ -57,7 +56,7 @@ fun DatePicker(onDateSelected: (LocalDate) -> Unit, onDismissRequest: () -> Unit
                 Spacer(modifier = Modifier.size(24.dp))
 
                 Text(
-                    text = selDate.value.format(DateTimeFormatter.ofPattern("MMM d, YYYY")),
+                    text = selDate.value.format(DateTimeFormatter.ofPattern("MMM d, yyyy")),
                     style = MaterialTheme.typography.h4,
                     color = MaterialTheme.colors.onPrimary
                 )
@@ -103,7 +102,6 @@ fun DatePicker(onDateSelected: (LocalDate) -> Unit, onDismissRequest: () -> Unit
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CustomCalendarView(onDateSelected: (LocalDate) -> Unit) {
     val context = LocalContext.current
@@ -129,11 +127,10 @@ fun CustomCalendarView(onDateSelected: (LocalDate) -> Unit) {
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun DatePickerPreview(){
-    FreelancerTheme {
+    SmorkTheme {
         DatePicker(onDateSelected = {}) {
 
         }
