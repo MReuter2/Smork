@@ -1,15 +1,16 @@
 package de.mreuter.smork.ui.navigation
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.*
 import androidx.navigation.compose.composable
 import de.mreuter.smork.backend.client.domain.Client
 import de.mreuter.smork.backend.database.MainViewModel
-import de.mreuter.smork.backend.project.application.toProject
 import de.mreuter.smork.ui.elements.BottomNavigationBar
-import de.mreuter.smork.ui.screens.NewProject
-import de.mreuter.smork.ui.screens.Project
-import de.mreuter.smork.ui.screens.ProjectEditView
-import de.mreuter.smork.ui.screens.Projects
+import de.mreuter.smork.ui.screens.project.NewProject
+import de.mreuter.smork.ui.screens.project.Project
+import de.mreuter.smork.ui.screens.project.ProjectEditView
+import de.mreuter.smork.ui.screens.project.Projects
 
 
 fun NavGraphBuilder.projectGraph(
@@ -22,9 +23,8 @@ fun NavGraphBuilder.projectGraph(
     ) {
         composable(Screen.Projects.route + "/projects") {
             val projects = viewModel.findAllProjects()
-            if(projects.isNotEmpty()){
                 Projects(
-                    projects = projects, //TODO: findAllProjects()
+                    projects = projects,
                     navigateToNewProject = { navController.navigate(Screen.Projects.route + "/newProject") },
                     navigateToProject = { project ->
                         navController.navigate(
@@ -34,7 +34,6 @@ fun NavGraphBuilder.projectGraph(
                         )
                     }
                 ) { BottomNavigationBar(navController = navController) }
-            }
         }
         composable(Screen.Projects.route + "/newProject?clientID={clientID}") {
             var preselectedClient: Client? = null
@@ -66,19 +65,16 @@ fun NavGraphBuilder.projectGraph(
         ) {
             val projectId = it.arguments?.getString("projectID") ?: throw RuntimeException("This is not an ID")
             val project = viewModel.findProjectById(projectId)
-            //val projectSearchResult by viewModel.projectSearchResults.observeAsState()
-            val edit = it.arguments?.getBoolean("edit") ?: false
-            //val project = projectSearchResult?.first()
+            val edit = remember { mutableStateOf(it.arguments?.getBoolean("edit") ?: false) }
             val allClients = viewModel.findAllClients()
 
-
             if(project != null) {
-                if (!edit) {
+                if (!edit.value) {
                     Project(
                         project = project,
                         bottomBar = { BottomNavigationBar(navController = navController) },
-                        backNavigation = { navController.navigate(Screen.Projects.route) },
-                        navigateToEditView = { navController.navigate(Screen.Projects.withArgs("$projectId?edit=true")) },
+                        backNavigation = { navController.popBackStack() },
+                        navigateToEditView = { edit.value = true },
                         onProjectUpdate = { updatedProject ->
                             viewModel.insertProject(updatedProject)
                             navController.navigate(Screen.Projects.withArgs(updatedProject.id.toString()))
@@ -90,14 +86,14 @@ fun NavGraphBuilder.projectGraph(
                             project = project,
                             clients = allClients,
                             bottomBar = { BottomNavigationBar(navController) },
-                            navigateToProjects = { navController.navigate(Screen.Projects.route + "/projects") },
+                            backNavigation = { edit.value = false },
                             onProjectDelete = { oldProject ->
-                                navController.navigate(Screen.Projects.route + "/projects")
+                                navController.popBackStack()
                                 viewModel.deleteProject(oldProject)
                             },
                             onProjectUpdate = { updatedProject ->
                                 viewModel.insertProject(updatedProject)
-                                navController.navigate(Screen.Projects.withArgs(updatedProject.id.toString()))
+                                edit.value = false
                             }
                         )
                     }

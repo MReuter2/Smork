@@ -1,14 +1,15 @@
 package de.mreuter.smork.ui.navigation
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.*
 import androidx.navigation.compose.composable
 import de.mreuter.smork.backend.database.MainViewModel
 import de.mreuter.smork.ui.elements.BottomNavigationBar
-import de.mreuter.smork.ui.screens.ClientEditingView
-import de.mreuter.smork.ui.screens.ClientView
-import de.mreuter.smork.ui.screens.Clients
+import de.mreuter.smork.ui.screens.client.ClientCreating
+import de.mreuter.smork.ui.screens.client.ClientEditingView
+import de.mreuter.smork.ui.screens.client.ClientView
+import de.mreuter.smork.ui.screens.client.Clients
 
 
 fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainViewModel) {
@@ -23,7 +24,7 @@ fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainVie
             )
         }
         composable(Screen.Clients.route + "/newClient") {
-            ClientEditingView(
+            ClientCreating(
                 onClientSave = { newClient ->
                     viewModel.insertClient(newClient)
                     navController.navigate(Screen.Clients.withArgs(newClient.id.toString()))
@@ -43,19 +44,14 @@ fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainVie
             if (it.arguments?.getString("clientID") != null) {
                 val clientId = it.arguments?.getString("clientID")
                     ?: throw RuntimeException("No Client with ID: " + it.arguments?.getString("clientID"))
+                val edit = remember{ mutableStateOf(it.arguments?.getBoolean("edit") ?: false) }
+
                 val client = viewModel.findClientById(clientId)
                 if (client != null) {
-                    if (it.arguments?.getBoolean("edit") == false) {
+                    if (!edit.value) {
                         ClientView(
                             client = client,
-                            navigateToEditView = {
-                                navController.navigate(
-                                    Screen.Clients.withArgs(
-                                        clientId,
-                                        "?edit=true"
-                                    )
-                                )
-                            },
+                            navigateToEditView = {edit.value = true},
                             navigateToNewProject = { preselectedClient ->
                                 navController.navigate(
                                     Screen.Projects.route + "/newProject?clientID=${preselectedClient.id}"
@@ -63,9 +59,7 @@ fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainVie
                             },
                             navigateToProject = { project ->
                                 navController.navigate(
-                                    Screen.Projects.withArgs(
-                                        project.id.toString()
-                                    )
+                                    Screen.Projects.withArgs(project.id.toString())
                                 )
                             },
                             bottomBar = { BottomNavigationBar(navController) }
@@ -75,10 +69,14 @@ fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainVie
                             client = client,
                             onClientSave = { newClient ->
                                 viewModel.insertClient(newClient)
-                                navController.navigate(Screen.Clients.withArgs(newClient.id.toString()))
+                                edit.value = false
+                            },
+                            onClientDelete = { deleteClient ->
+                                viewModel.deleteClient(deleteClient)
+                                navController.popBackStack()
                             },
                             bottomBar = { BottomNavigationBar(navController) },
-                            backNavigation = { navController.popBackStack() }
+                            backNavigation = { edit.value = false }
                         )
                     }
                 }

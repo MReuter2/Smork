@@ -14,6 +14,7 @@ import de.mreuter.smork.backend.company.application.CompanyEntity
 import de.mreuter.smork.backend.company.application.toCompany
 import de.mreuter.smork.backend.company.domain.Company
 import de.mreuter.smork.backend.company.domain.CompanyRepository
+import de.mreuter.smork.backend.owner.application.fromOwner
 import de.mreuter.smork.backend.owner.application.toOwner
 import de.mreuter.smork.backend.owner.domain.Owner
 import de.mreuter.smork.backend.owner.domain.OwnerRepository
@@ -22,6 +23,7 @@ import de.mreuter.smork.backend.project.application.fromProject
 import de.mreuter.smork.backend.project.application.toProject
 import de.mreuter.smork.backend.project.application.toProjects
 import de.mreuter.smork.backend.project.domain.ProjectRepository
+import de.mreuter.smork.backend.worker.application.fromWorker
 import de.mreuter.smork.backend.worker.application.toWorker
 import de.mreuter.smork.backend.worker.domain.Worker
 import de.mreuter.smork.backend.worker.domain.WorkerRepository
@@ -56,12 +58,22 @@ class MainViewModel(application: Application): ViewModel() {
     private val allClients = clientRepository.allClientEntities
 
     private val clientSearchResults = clientRepository.searchResults
+    private val ownerSearchResults = ownerRepository.searchResult
+    private val workerSearchResults = workerRepository.searchResult
     private val projectSearchResults = projectRepository.searchResults
 
     fun insertCompany(companyEntity: CompanyEntity) = companyRepository.insertCompany(companyEntity)
 
     fun insertClient(newClient: Client){
         clientRepository.insertClient(fromClient(newClient))
+    }
+
+    fun insertOwner(newOwner: Owner){
+        ownerRepository.insertOwner(fromOwner(newOwner))
+    }
+
+    fun insertWorker(newWorker: Worker){
+        workerRepository.insertWorker(fromWorker(newWorker))
     }
 
     fun insertProject(project: Project){
@@ -72,6 +84,32 @@ class MainViewModel(application: Application): ViewModel() {
 
     fun deleteProject(project: Project){
         projectRepository.deleteProject(fromProject(project))
+    }
+
+    fun deleteWorker(worker: Worker){
+        workerRepository.deleteWorker(fromWorker(worker))
+    }
+
+    fun deleteOwner(owner: Owner){
+        ownerRepository.deleteOwner(fromOwner(owner))
+    }
+
+    fun deleteClient(client: Client){
+        clientRepository.deleteClient(fromClient(client))
+    }
+
+    @Composable
+    fun findOwnerById(ownerId: String): Owner?{
+        ownerRepository.findOwnerById(ownerId)
+        val ownerSearchResult by ownerSearchResults.observeAsState()
+        return ownerSearchResult?.let { toOwner(it) }
+    }
+
+    @Composable
+    fun findWorkerById(workerId: String): Worker?{
+        workerRepository.findWorkerById(workerId)
+        val workerSearchResult by workerSearchResults.observeAsState()
+        return workerSearchResult?.let { toWorker(it) }
     }
 
     @Composable
@@ -115,7 +153,6 @@ class MainViewModel(application: Application): ViewModel() {
     fun findAllProjects(): List<Project>{
         val allProjectEntities by this.allProjectsWithClient.observeAsState()
         val allProjects = mutableListOf<Project>()
-        //TODO: Add Client to the Project
         allProjectEntities?.forEach { (projectEntity, clientEntity) ->
             val project = toProject(projectEntity)
             project.client = toClient(clientEntity)

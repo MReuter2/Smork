@@ -1,8 +1,10 @@
 package de.mreuter.smork.backend.core
 
 import de.mreuter.smork.backend.client.application.ClientEntity
+import de.mreuter.smork.backend.client.domain.Client
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class Address(var postcode: Int, var city: String, var street: String, var houseNumber: Int){
     init {
@@ -52,7 +54,7 @@ class EmailAddress(emailAddress: String){
     }
 }
 
-class Maintenance(val clientEntity: ClientEntity, val description: String, val date: Date){
+class Maintenance(val client: Client, val description: String, val date: Date){
     var isFinished = false
 
     fun finish(){
@@ -63,5 +65,24 @@ class Maintenance(val clientEntity: ClientEntity, val description: String, val d
 class Date(val localDate: LocalDate){
     override fun toString(): String {
         return localDate.format(DateTimeFormatter.ofPattern("dd.MM.uuuu")).toString()
+    }
+}
+
+abstract class Person(
+    val id: UUID = UUID.randomUUID(),
+    var fullname: Fullname,
+    var phonenumber: Long? = null,
+    var address: Address? = null,
+    var emailAddress: EmailAddress? = null)
+{
+    override fun toString(): String {
+        return fullname.toString()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if(other is Client){
+            return this.id == other.id
+        }
+        return super.equals(other)
     }
 }

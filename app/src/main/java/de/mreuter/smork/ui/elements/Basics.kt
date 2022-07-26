@@ -9,7 +9,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -20,8 +23,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
-import de.mreuter.smork.ui.screens.TaskListWithCheckbox
-import de.mreuter.smork.ui.theme.*
+import de.mreuter.smork.ui.theme.SmorkTheme
+import de.mreuter.smork.ui.theme.defaultTextFieldColors
 
 
 @Composable
@@ -52,7 +55,8 @@ fun BasicOutlinedTextField(
 @Composable
 fun ClickableRow(onClick: () -> Unit, content: @Composable () -> Unit) {
     Row(
-        Modifier
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
             .clickable {
                 onClick()
             }

@@ -1,16 +1,22 @@
-package de.mreuter.smork.ui.screens
+package de.mreuter.smork.ui.screens.home
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
+import de.mreuter.smork.backend.core.Date
 import de.mreuter.smork.backend.core.Maintenance
-import de.mreuter.smork.backend.project.application.ProjectEntity
 import de.mreuter.smork.backend.project.domain.Project
+import de.mreuter.smork.exampleClients
+import de.mreuter.smork.exampleProjects
 import de.mreuter.smork.ui.elements.*
+import de.mreuter.smork.ui.theme.SmorkTheme
+import java.time.LocalDate
 
 @Composable
 fun Home(
@@ -30,7 +36,7 @@ fun Home(
                     projects.forEach { project ->
                         ClickableListItem(
                             project.name,
-                            project.client.toString() //TODO
+                            project.client.toString()
                         ) {
                             navigateToProject(project)
                         }
@@ -62,15 +68,14 @@ fun Home(
     }
 }
 
-/*@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 fun HomePreview() {
     SmorkTheme {
         Home(
-            projectEntities = exampleProjectEntities,
-            activeMaintenances = listOf(Maintenance(exampleClientEntityEntities[0], "Ma", Date(LocalDate.now()))),
+            projects = exampleProjects,
+            activeMaintenances = listOf(Maintenance(exampleClients[0], "Boiler", Date(LocalDate.now()))),
             bottomBar = { BottomNavigationBar() }
         )
     }
-}*/
+}
