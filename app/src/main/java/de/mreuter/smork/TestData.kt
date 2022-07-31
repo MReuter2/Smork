@@ -50,9 +50,3 @@ val exampleWorker = mutableListOf<Worker>(
     Worker(fullname = Fullname("Helene", "Fischer"),
         emailAddress = EmailAddress("Helene@Fisch.er)"))
 )
-
-@Composable
-@Preview
-fun TestApp(){
-
-}

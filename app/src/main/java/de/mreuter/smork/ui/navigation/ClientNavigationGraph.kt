@@ -15,7 +15,7 @@ import de.mreuter.smork.ui.screens.client.Clients
 fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainViewModel) {
     navigation(startDestination = Screen.Clients.route + "/clients", route = Screen.Clients.route) {
         composable(Screen.Clients.route + "/clients") {
-            val allClients = viewModel.findAllClients()
+            val allClients = viewModel.clientService.findAllClients()
             Clients(
                 navigateToClient = { navController.navigate(Screen.Clients.withArgs(it.id.toString())) },
                 navigateToNewClient = { navController.navigate(Screen.Clients.route + "/newClient") },
@@ -26,7 +26,7 @@ fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainVie
         composable(Screen.Clients.route + "/newClient") {
             ClientCreating(
                 onClientSave = { newClient ->
-                    viewModel.insertClient(newClient)
+                    viewModel.clientService.insertClient(newClient)
                     navController.navigate(Screen.Clients.withArgs(newClient.id.toString()))
                 },
                 bottomBar = { BottomNavigationBar(navController) },
@@ -46,11 +46,13 @@ fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainVie
                     ?: throw RuntimeException("No Client with ID: " + it.arguments?.getString("clientID"))
                 val edit = remember{ mutableStateOf(it.arguments?.getBoolean("edit") ?: false) }
 
-                val client = viewModel.findClientById(clientId)
+                val client = viewModel.clientService.findClientById(clientId)
+                val projects = viewModel.projectService.findProjectsByClientId(clientId)
                 if (client != null) {
                     if (!edit.value) {
                         ClientView(
                             client = client,
+                            projects = projects,
                             navigateToEditView = {edit.value = true},
                             navigateToNewProject = { preselectedClient ->
                                 navController.navigate(
@@ -68,11 +70,11 @@ fun NavGraphBuilder.clientGraph(navController: NavController, viewModel: MainVie
                         ClientEditingView(
                             client = client,
                             onClientSave = { newClient ->
-                                viewModel.insertClient(newClient)
+                                viewModel.clientService.insertClient(newClient)
                                 edit.value = false
                             },
                             onClientDelete = { deleteClient ->
-                                viewModel.deleteClient(deleteClient)
+                                viewModel.clientService.deleteClient(deleteClient)
                                 navController.popBackStack()
                             },
                             bottomBar = { BottomNavigationBar(navController) },

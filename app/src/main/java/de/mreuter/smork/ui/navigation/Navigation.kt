@@ -49,7 +49,7 @@ fun NavGraphBuilder.loginGraph(navController: NavController, viewModel: MainView
     navigation(startDestination = Screen.JoinCompany.route, route = Screen.Login.route) {
         composable(Screen.JoinCompany.route) {
             CreateCompany(onCompanySave = { company ->
-                viewModel.insertCompany(company)
+                viewModel.companyService.insertCompany(company)
                 navController.navigate(Screen.Company.route)
             })
         }
@@ -61,7 +61,7 @@ fun NavigationHost(
     viewModel: MainViewModel
 ){
     val navController = rememberNavController()
-    val company = viewModel.findCompany()
+    val company = viewModel.companyService.findCompany()
     val startDestination = if(company != null) Screen.Company.route else Screen.Login.route
     NavHost(navController = navController, startDestination = startDestination) {
         loginGraph(navController, viewModel)

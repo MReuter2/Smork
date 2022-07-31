@@ -1,4 +1,4 @@
-package de.mreuter.smork.backend.task.domain
+package de.mreuter.smork.backend.project.domain
 
 import java.util.*
 

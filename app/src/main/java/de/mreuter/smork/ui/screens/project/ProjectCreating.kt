@@ -13,7 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.backend.client.domain.Client
 import de.mreuter.smork.backend.project.domain.Project
-import de.mreuter.smork.backend.task.domain.Task
+import de.mreuter.smork.backend.project.domain.Task
 import de.mreuter.smork.exampleClients
 import de.mreuter.smork.ui.elements.*
 import de.mreuter.smork.ui.theme.SmorkTheme

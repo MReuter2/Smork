@@ -12,8 +12,8 @@ import de.mreuter.smork.backend.owner.application.OwnerEntity
 import de.mreuter.smork.backend.owner.domain.OwnerDao
 import de.mreuter.smork.backend.project.application.ProjectEntity
 import de.mreuter.smork.backend.project.domain.ProjectDao
-import de.mreuter.smork.backend.task.application.TaskEntity
-import de.mreuter.smork.backend.task.domain.TaskDao
+import de.mreuter.smork.backend.project.application.TaskEntity
+import de.mreuter.smork.backend.project.domain.TaskDao
 import de.mreuter.smork.backend.worker.application.WorkerEntity
 import de.mreuter.smork.backend.worker.domain.WorkerDao
 

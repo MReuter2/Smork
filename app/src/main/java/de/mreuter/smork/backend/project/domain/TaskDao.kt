@@ -1,10 +1,10 @@
-package de.mreuter.smork.backend.task.domain
+package de.mreuter.smork.backend.project.domain
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import de.mreuter.smork.backend.task.application.TaskEntity
+import de.mreuter.smork.backend.project.application.TaskEntity
 
 @Dao
 interface TaskDao {

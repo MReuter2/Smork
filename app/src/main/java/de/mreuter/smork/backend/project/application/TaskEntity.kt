@@ -1,10 +1,9 @@
-package de.mreuter.smork.backend.task.application
+package de.mreuter.smork.backend.project.application
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import de.mreuter.smork.backend.project.application.ProjectEntity
 
 @Entity(tableName = "task", foreignKeys = [ForeignKey(
     childColumns =["projectId"],

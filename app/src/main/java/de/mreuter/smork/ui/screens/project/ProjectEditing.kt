@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
 import de.mreuter.smork.backend.client.domain.Client
 import de.mreuter.smork.backend.project.domain.Project
-import de.mreuter.smork.backend.task.domain.Task
+import de.mreuter.smork.backend.project.domain.Task
 import de.mreuter.smork.exampleClients
 import de.mreuter.smork.exampleProjects
 import de.mreuter.smork.ui.elements.*

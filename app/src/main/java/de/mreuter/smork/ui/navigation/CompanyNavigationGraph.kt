@@ -1,14 +1,11 @@
 package de.mreuter.smork.ui.navigation
 
-import android.widget.Toast
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.navigation.*
 import androidx.navigation.compose.composable
 import de.mreuter.smork.backend.company.application.fromCompany
 import de.mreuter.smork.backend.database.MainViewModel
-import de.mreuter.smork.backend.worker.domain.Worker
 import de.mreuter.smork.ui.elements.BottomNavigationBar
 import de.mreuter.smork.ui.screens.company.*
 
@@ -22,9 +19,9 @@ fun NavGraphBuilder.companyGraph(navController: NavController, viewModel: MainVi
                         }
                     )
         ){
-            val company = viewModel.findCompany() ?: throw RuntimeException("Something went wrong")
-            val owner = viewModel.findAllOwner()
-            val worker = viewModel.findAllWorker()
+            val company = viewModel.companyService.findCompany() ?: throw RuntimeException("Something went wrong")
+            val owner = viewModel.ownerService.findAllOwner()
+            val worker = viewModel.workerService.findAllWorker()
 
             val edit = remember{ mutableStateOf(it.arguments?.getBoolean("edit") ?: false) }
 
@@ -45,7 +42,7 @@ fun NavGraphBuilder.companyGraph(navController: NavController, viewModel: MainVi
                 CompanyEditing(
                     company = company,
                     onCompanySave = {updatedCompany ->
-                        viewModel.insertCompany(fromCompany(updatedCompany))
+                        viewModel.companyService.insertCompany(fromCompany(updatedCompany))
                         edit.value = false
                     },
                     backNavigation = { edit.value = false }
@@ -57,7 +54,7 @@ fun NavGraphBuilder.companyGraph(navController: NavController, viewModel: MainVi
         composable(Screen.Company.route + "/newOwner") {
             OwnerCreating(
                onOwnerSave = {
-                   viewModel.insertOwner(it)
+                   viewModel.ownerService.insertOwner(it)
                    navController.popBackStack() },
                backNavigation = { navController.popBackStack() }
             ){ BottomNavigationBar(navController) }
@@ -65,7 +62,7 @@ fun NavGraphBuilder.companyGraph(navController: NavController, viewModel: MainVi
         composable(Screen.Company.route + "/newWorker") {
             WorkerCreating(
                 onWorkerSave = {
-                    viewModel.insertWorker(it)
+                    viewModel.workerService.insertWorker(it)
                     navController.popBackStack() },
                 backNavigation = { navController.popBackStack() }
             ){ BottomNavigationBar(navController) }
@@ -83,18 +80,18 @@ fun NavGraphBuilder.companyGraph(navController: NavController, viewModel: MainVi
                 val personId = it.arguments?.getString("personId")
                     ?: throw RuntimeException("No Person with ID: " + it.arguments?.getString("personId"))
                 val edit = remember{ mutableStateOf(it.arguments?.getBoolean("edit")?: false) }
-                val owner = viewModel.findOwnerById(personId)
-                val worker = viewModel.findWorkerById(personId)
+                val owner = viewModel.ownerService.findOwnerById(personId)
+                val worker = viewModel.workerService.findWorkerById(personId)
                 if(owner != null){
                     if(edit.value){
                         OwnerEditing(
                             owner = owner,
                             onOwnerSave = { updatedOwner ->
-                                viewModel.insertOwner(updatedOwner)
+                                viewModel.ownerService.insertOwner(updatedOwner)
                                 edit.value = false },
                             onOwnerDelete = { deleteOwner ->
                                 navController.popBackStack()
-                                viewModel.deleteOwner(deleteOwner)
+                                viewModel.ownerService.deleteOwner(deleteOwner)
                             },
                             backNavigation = { edit.value = false }
                         ) { BottomNavigationBar(navController) }
@@ -111,11 +108,11 @@ fun NavGraphBuilder.companyGraph(navController: NavController, viewModel: MainVi
                             WorkerEditing(
                                 worker = worker,
                                 onWorkerSave = { updatedWorker ->
-                                    viewModel.insertWorker(updatedWorker)
+                                    viewModel.workerService.insertWorker(updatedWorker)
                                     edit.value = false },
                                 onWorkerDelete = { deleteWorker ->
                                     navController.popBackStack()
-                                    viewModel.deleteWorker(deleteWorker)
+                                    viewModel.workerService.deleteWorker(deleteWorker)
                                 },
                                 backNavigation = { edit.value = false }
                             ) { BottomNavigationBar(navController) }

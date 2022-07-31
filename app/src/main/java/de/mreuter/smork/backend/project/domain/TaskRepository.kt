@@ -1,7 +1,7 @@
-package de.mreuter.smork.backend.task.domain
+package de.mreuter.smork.backend.project.domain
 
 import androidx.lifecycle.MutableLiveData
-import de.mreuter.smork.backend.task.application.TaskEntity
+import de.mreuter.smork.backend.project.application.TaskEntity
 import kotlinx.coroutines.*
 
 class TaskRepository(private val taskDao: TaskDao) {

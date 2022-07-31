@@ -14,7 +14,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
-import de.mreuter.smork.backend.task.domain.Task
+import de.mreuter.smork.backend.project.domain.Task
 import de.mreuter.smork.ui.theme.SmorkTheme
 
 

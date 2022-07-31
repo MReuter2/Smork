@@ -1,6 +1,6 @@
-package de.mreuter.smork.backend.task.application
+package de.mreuter.smork.backend.project.application
 
-import de.mreuter.smork.backend.task.domain.Task
+import de.mreuter.smork.backend.project.domain.Task
 import java.util.*
 
 fun fromTask(task: Task, projectId: String): TaskEntity = TaskEntity(task.id.toString(), task.description, task.isFinished, projectId)

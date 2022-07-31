@@ -17,6 +17,7 @@ import de.mreuter.smork.R
 import de.mreuter.smork.backend.client.domain.Client
 import de.mreuter.smork.backend.project.domain.Project
 import de.mreuter.smork.exampleClients
+import de.mreuter.smork.exampleProjects
 import de.mreuter.smork.ui.elements.*
 import de.mreuter.smork.ui.theme.SmorkTheme
 
@@ -24,6 +25,7 @@ import de.mreuter.smork.ui.theme.SmorkTheme
 @Composable
 fun ClientView(
     client: Client,
+    projects: List<Project>,
     navigateToEditView: (Client) -> Unit = {},
     navigateToNewProject: (Client) -> Unit = {},
     navigateToProject: (Project) -> Unit = {},
@@ -58,7 +60,7 @@ fun ClientView(
                 BasicListItem(topic = "Address", description = client.address?.toString() ?: "")
                 BasicDivider()
             }
-            BasicCard {
+            /*BasicCard {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -82,7 +84,7 @@ fun ClientView(
                     }
                     BasicDivider()
                 }
-            }
+            }*/
             BasicCard {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -102,7 +104,7 @@ fun ClientView(
                     }
                 }
                 Spacer(modifier = Modifier.padding(5.dp))
-                client.projects.forEach {
+                projects.forEach {
                     ClickableListItem(it.name, if (it.isFinished()) "Finished" else "Active") {
                         navigateToProject(it)
                     }
@@ -119,6 +121,7 @@ fun PeviewClientView() {
     SmorkTheme {
         ClientView(
             client = exampleClients[0],
+            projects = exampleProjects,
             bottomBar = { BottomNavigationBar() }
         )
     }
