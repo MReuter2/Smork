@@ -3,18 +3,18 @@ package de.mreuter.smork.ui.elements
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
-import de.mreuter.smork.backend.core.Task
+import de.mreuter.smork.backend.task.domain.Task
 import de.mreuter.smork.ui.theme.SmorkTheme
 
 
@@ -42,7 +42,7 @@ fun TaskRowWithCheckbox(task: Task) {
             .clickable(onClick = { taskCheck.value = !taskCheck.value })
     ) {
         Text(
-            text = task.taskDescription,
+            text = task.description,
             style = TextStyle(textDecoration = if (taskCheck.value) TextDecoration.LineThrough else TextDecoration.None)
         )
         Checkbox(
@@ -62,7 +62,7 @@ fun TaskRow(task: Task, deleteAction: (Task) -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = task.taskDescription,
+            text = task.description,
             modifier = Modifier
                 .padding(8.dp)
                 .weight(4F),
@@ -79,10 +79,47 @@ fun TaskRow(task: Task, deleteAction: (Task) -> Unit) {
     }
 }
 
+
+@Composable
+fun NewTaskRow(actionOnClick: (Task) -> Unit = {}) {
+    var text by remember { mutableStateOf(TextFieldValue("")) }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextField(
+            value = text,
+            onValueChange = { text = it },
+            singleLine = true,
+            placeholder = { Text(text = "New task") },
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color.Transparent
+            ),
+            modifier = Modifier
+                .height(50.dp)
+                .weight(6F)
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.ic_outline_add_24),
+            contentDescription = null,
+            modifier = Modifier
+                .clickable {
+                    if (text.text != "") {
+                        actionOnClick(Task(description = text.text))
+                        text = TextFieldValue("")
+                    }
+                }
+                .weight(1F),
+            tint = MaterialTheme.colors.onSurface
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewTaskRow() {
     SmorkTheme {
-        TaskRow(task = Task("Task"), deleteAction = {})
+        TaskRow(task = Task(description = "Task"), deleteAction = {})
     }
 }

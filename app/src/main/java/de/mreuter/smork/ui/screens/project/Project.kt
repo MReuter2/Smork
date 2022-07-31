@@ -115,7 +115,7 @@ fun Project(
                 }
             }
 
-            ExpandableCard(title = "Tasks") { TaskListWithCheckbox(tasks = listOf()) } //TODO TASKS
+            ExpandableCard(title = "Tasks") { TaskListWithCheckbox(tasks = project.tasks) }
 
             ExpandableCard(title = "Images") {
                 val context = LocalContext.current

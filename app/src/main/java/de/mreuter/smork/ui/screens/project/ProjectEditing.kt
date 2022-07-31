@@ -1,7 +1,11 @@
 package de.mreuter.smork.ui.screens.project
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -9,8 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.R
 import de.mreuter.smork.backend.client.domain.Client
-import de.mreuter.smork.backend.core.Task
 import de.mreuter.smork.backend.project.domain.Project
+import de.mreuter.smork.backend.task.domain.Task
 import de.mreuter.smork.exampleClients
 import de.mreuter.smork.exampleProjects
 import de.mreuter.smork.ui.elements.*
@@ -27,7 +31,13 @@ fun ProjectEditView(
     onProjectUpdate: (Project) -> Unit = {}
 ) {
     val projectName = remember { mutableStateOf(project.name) }
-    val tasks = remember { mutableStateListOf<Task>() } //TODO TASKS
+    val tasks = remember{ mutableStateListOf<Task>() }
+    val tasksLoaded = remember{ mutableStateOf(false)}
+    if(!tasksLoaded.value){
+        project.tasks.forEach { tasks.add(it) }
+        tasksLoaded.value = true
+    }
+
     val sortedClients = clients
         .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.fullname.lastname })
     val clientDropDown = DropDown(sortedClients)
@@ -91,10 +101,9 @@ fun ProjectEditView(
                 ) {
                     val client: Client =
                         clientDropDown.exposedMenuStateHolder.selectedItem as Client
-                    project.name = projectName.value
-                    val newProject = Project(project.id, projectName.value, client, project.startDate, project.finishDate)
-                    newProject.addTasks(tasks)
-                    onProjectUpdate(project)
+                    val updatedProject = Project(project.id, projectName.value, client, project.startDate, project.finishDate)
+                    updatedProject.addTasks(tasks)
+                    onProjectUpdate(updatedProject)
                 } else {
                     showErrors.value = true
                 }

@@ -73,7 +73,7 @@ fun NavGraphBuilder.projectGraph(
                     Project(
                         project = project,
                         bottomBar = { BottomNavigationBar(navController = navController) },
-                        backNavigation = { navController.popBackStack() },
+                        backNavigation = { navController.navigate(Screen.Projects.route) },
                         navigateToEditView = { edit.value = true },
                         onProjectUpdate = { updatedProject ->
                             viewModel.insertProject(updatedProject)

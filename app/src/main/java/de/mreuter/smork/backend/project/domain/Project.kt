@@ -2,7 +2,7 @@ package de.mreuter.smork.backend.project.domain
 
 import de.mreuter.smork.backend.client.domain.Client
 import de.mreuter.smork.backend.core.Date
-import de.mreuter.smork.backend.core.Task
+import de.mreuter.smork.backend.task.domain.Task
 import java.time.LocalDate
 import java.util.*
 

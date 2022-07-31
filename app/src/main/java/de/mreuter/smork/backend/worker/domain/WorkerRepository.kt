@@ -1,12 +1,11 @@
 package de.mreuter.smork.backend.worker.domain
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import de.mreuter.smork.backend.worker.application.WorkerEntity
 import kotlinx.coroutines.*
 
 class WorkerRepository(private val workerDao: WorkerDao) {
-    val allWorker = workerDao.getAllWorker()
+    val allWorker = workerDao.findAllWorker()
     val searchResult = MutableLiveData<WorkerEntity>()
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -22,9 +21,13 @@ class WorkerRepository(private val workerDao: WorkerDao) {
         }
     }
 
-    fun findWorkerById(workerId: String) = workerDao.findWorkerById(workerId)
+    fun findWorkerById(workerId: String) {
+        coroutineScope.launch(Dispatchers.Main) {
+            searchResult.value = asyncFind(workerId).await()
+        }
+    }
 
-    private fun asyncFind(workerId: String): Deferred<LiveData<WorkerEntity>?> =
+    private fun asyncFind(workerId: String): Deferred<WorkerEntity> =
         coroutineScope.async(Dispatchers.IO){
             return@async workerDao.findWorkerById(workerId)
         }

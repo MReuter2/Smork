@@ -84,10 +84,9 @@ fun TopBar(
 @Composable
 fun BottomNavigationBar(navController: NavController = rememberNavController()) {
     val navItems = listOf(
-        Screen.Home,
         Screen.Projects,
-        Screen.Clients,
-        Screen.Company
+        Screen.Company,
+        Screen.Clients
     )
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.primary,

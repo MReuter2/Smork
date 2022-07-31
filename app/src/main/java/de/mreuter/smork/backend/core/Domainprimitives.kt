@@ -28,10 +28,6 @@ data class Fullname(var firstname: String, var lastname: String){
     }
 }
 
-class Task(val taskDescription: String){
-    var isFinished = false
-}
-
 class EmailAddress(emailAddress: String){
     var emailAddress = emailAddress
     set(value) {

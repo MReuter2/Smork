@@ -12,12 +12,14 @@ import de.mreuter.smork.backend.owner.application.OwnerEntity
 import de.mreuter.smork.backend.owner.domain.OwnerDao
 import de.mreuter.smork.backend.project.application.ProjectEntity
 import de.mreuter.smork.backend.project.domain.ProjectDao
+import de.mreuter.smork.backend.task.application.TaskEntity
+import de.mreuter.smork.backend.task.domain.TaskDao
 import de.mreuter.smork.backend.worker.application.WorkerEntity
 import de.mreuter.smork.backend.worker.domain.WorkerDao
 
 @Database(
-    entities = [(ProjectEntity::class), (CompanyEntity::class), (OwnerEntity::class), (WorkerEntity::class), (ClientEntity::class)],
-    version = 6, exportSchema = true)
+    entities = [(ProjectEntity::class), (CompanyEntity::class), (OwnerEntity::class), (WorkerEntity::class), (ClientEntity::class), (TaskEntity::class)],
+    version = 8, exportSchema = true)
 abstract class SmorkDatabase: RoomDatabase() {
 
     abstract fun projectDao(): ProjectDao
@@ -25,6 +27,7 @@ abstract class SmorkDatabase: RoomDatabase() {
     abstract fun ownerDao(): OwnerDao
     abstract fun workerDao(): WorkerDao
     abstract fun clientDao(): ClientDao
+    abstract fun taskDao(): TaskDao
 
     companion object {
         private var INSTANCE: SmorkDatabase? = null

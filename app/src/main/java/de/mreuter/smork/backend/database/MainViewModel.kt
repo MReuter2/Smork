@@ -23,6 +23,12 @@ import de.mreuter.smork.backend.project.application.fromProject
 import de.mreuter.smork.backend.project.application.toProject
 import de.mreuter.smork.backend.project.application.toProjects
 import de.mreuter.smork.backend.project.domain.ProjectRepository
+import de.mreuter.smork.backend.task.application.TaskEntity
+import de.mreuter.smork.backend.task.application.fromTask
+import de.mreuter.smork.backend.task.application.toTask
+import de.mreuter.smork.backend.task.application.toTasks
+import de.mreuter.smork.backend.task.domain.Task
+import de.mreuter.smork.backend.task.domain.TaskRepository
 import de.mreuter.smork.backend.worker.application.fromWorker
 import de.mreuter.smork.backend.worker.application.toWorker
 import de.mreuter.smork.backend.worker.domain.Worker
@@ -35,6 +41,7 @@ class MainViewModel(application: Application): ViewModel() {
     private val ownerRepository: OwnerRepository
     private val workerRepository: WorkerRepository
     private val clientRepository: ClientRepository
+    private val taskRepository: TaskRepository
 
     init{
         val database = SmorkDatabase.getInstance(application)
@@ -43,17 +50,18 @@ class MainViewModel(application: Application): ViewModel() {
         val ownerDao = database.ownerDao()
         val workerDao = database.workerDao()
         val clientDao = database.clientDao()
+        val taskDao = database.taskDao()
         projectRepository = ProjectRepository(projectDao)
         companyRepository = CompanyRepository(companyDao)
         ownerRepository = OwnerRepository(ownerDao)
         workerRepository = WorkerRepository(workerDao)
         clientRepository = ClientRepository(clientDao)
+        taskRepository = TaskRepository(taskDao)
     }
 
     private val company = companyRepository.findCompanyEntity
     private val allOwner = ownerRepository.allOwner
     private val allWorker = workerRepository.allWorker
-    private val allProjects = projectRepository.allProjects
     private val allProjectsWithClient = projectRepository.allProjectsWithClient
     private val allClients = clientRepository.allClientEntities
 
@@ -61,6 +69,7 @@ class MainViewModel(application: Application): ViewModel() {
     private val ownerSearchResults = ownerRepository.searchResult
     private val workerSearchResults = workerRepository.searchResult
     private val projectSearchResults = projectRepository.searchResults
+    private val taskSearchResults = taskRepository.searchResults
 
     fun insertCompany(companyEntity: CompanyEntity) = companyRepository.insertCompany(companyEntity)
 
@@ -78,8 +87,10 @@ class MainViewModel(application: Application): ViewModel() {
 
     fun insertProject(project: Project){
         val projectEntity = fromProject(project)
-        //TODO: Insert Tasks
         projectRepository.insertProject(projectEntity)
+        project.tasks.forEach {
+            taskRepository.insertTask(fromTask(it, project.id.toString()))
+        }
     }
 
     fun deleteProject(project: Project){
@@ -164,16 +175,17 @@ class MainViewModel(application: Application): ViewModel() {
     @Composable
     fun findProjectById(projectId: String): Project?{
         projectRepository.findProjectById(projectId)
-        //TODO: Find Tasks by Project ID
-        val projectSearchResult = projectSearchResults.observeAsState(listOf())
-        if(projectSearchResult.value.isNotEmpty() && projectSearchResult.value.first().id == projectId){
-            val client = findClientById(clientId = projectSearchResult.value.first().clientId)
+        taskRepository.findTasksByProjectId(projectId)
+        val projectSearchResult by projectSearchResults.observeAsState(listOf())
+        val tasks by taskSearchResults.observeAsState(listOf())
+        if(projectSearchResult.isNotEmpty() && projectSearchResult.first().id == projectId){
+            val client = findClientById(clientId = projectSearchResult.first().clientId)
             if(client != null) {
-                val project = toProject(projectSearchResult.value.first())
+                val project = toProject(projectSearchResult.first())
                 project.client = client
+                project.addTasks(toTasks(tasks))
                 return project
             }
-            //TODO: Add Tasks
         }
         return null
     }

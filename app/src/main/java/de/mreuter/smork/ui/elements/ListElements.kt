@@ -35,7 +35,7 @@ fun ClickableListItem(topic: String? = null, subtitle: String? = null, action: (
                     text = subtitle,
                     style = MaterialTheme.typography.subtitle2,
                     modifier = Modifier
-                        .padding(start = 1.dp, top = 4.dp)
+                        .padding(start = 1.dp, top = 4.dp, bottom = 4.dp)
                 )
         }
     }
