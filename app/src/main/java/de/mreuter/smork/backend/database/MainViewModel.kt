@@ -15,7 +15,6 @@ import de.mreuter.smork.backend.worker.application.WorkerService
 import de.mreuter.smork.backend.worker.domain.WorkerRepository
 
 class MainViewModel(application: Application): ViewModel() {
-
     private val projectRepository: ProjectRepository
     private val companyRepository: CompanyRepository
     private val ownerRepository: OwnerRepository

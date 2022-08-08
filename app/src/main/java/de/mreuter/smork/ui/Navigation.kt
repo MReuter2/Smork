@@ -9,11 +9,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import de.mreuter.smork.R
+import de.mreuter.smork.backend.company.application.fromCompany
 import de.mreuter.smork.backend.database.MainViewModel
 import de.mreuter.smork.ui.client.navigation.clientGraph
 import de.mreuter.smork.ui.company.navigation.companyGraph
 import de.mreuter.smork.ui.project.navigation.projectGraph
 import de.mreuter.smork.ui.screens.home.CreateCompany
+import de.mreuter.smork.ui.utils.BottomNavigationBar
 
 sealed class Screen(
     val route: String,
@@ -21,10 +23,7 @@ sealed class Screen(
     @DrawableRes val selectedIcon: Int? = null,
     val title: String = ""
 ) {
-    object Login : Screen("login")
-    object JoinCompany : Screen("joinCompany")
-
-    //object Home : Screen("home", R.drawable.ic_outline_calendar_today_24, R.drawable.ic_baseline_calendar_today_24, "Home")
+    object Start : Screen("start")
 
     object Company :
         Screen("company_view", R.drawable.ic_outlined_warehouse, R.drawable.ic_baseline_warehouse, "Company")
@@ -32,7 +31,8 @@ sealed class Screen(
     object Clients :
         Screen("client_view", R.drawable.ic_outline_people_24, R.drawable.ic_baseline_people_24, "Clients")
 
-    object Projects : Screen("project_view", R.drawable.ic_outline_assignment_24, R.drawable.ic_baseline_assignment_24, "Projects")
+    object Projects :
+        Screen("project_view", R.drawable.ic_outline_assignment_24, R.drawable.ic_baseline_assignment_24, "Projects")
 
     fun withArgs(vararg args: String): String {
         return buildString {
@@ -48,11 +48,11 @@ sealed class Screen(
     }
 }
 
-fun NavGraphBuilder.loginGraph(navController: NavController, viewModel: MainViewModel) {
-    navigation(startDestination = Screen.JoinCompany.route, route = Screen.Login.route) {
-        composable(Screen.JoinCompany.route) {
+fun NavGraphBuilder.startGraph(navController: NavController, viewModel: MainViewModel) {
+    navigation(startDestination = Screen.Start.route + "/createCompany", route = Screen.Start.route) {
+        composable(Screen.Start.route + "/createCompany") {
             CreateCompany(onCompanySave = { company ->
-                viewModel.companyService.insertCompany(company)
+                viewModel.companyService.insertCompany(fromCompany(company))
                 navController.navigate(Screen.Company.route)
             })
         }
@@ -60,31 +60,14 @@ fun NavGraphBuilder.loginGraph(navController: NavController, viewModel: MainView
 }
 
 @Composable
-fun NavigationHost(
-    viewModel: MainViewModel
-){
+fun NavigationHost(viewModel: MainViewModel){
     val navController = rememberNavController()
     val company = viewModel.companyService.findCompany()
-    val startDestination = if(company != null) Screen.Company.route else Screen.Login.route
+    val startDestination = if(company != null) Screen.Company.route else Screen.Start.route
     NavHost(navController = navController, startDestination = startDestination) {
-        loginGraph(navController, viewModel)
+        startGraph(navController, viewModel)
         clientGraph(navController, viewModel)
         projectGraph(navController, viewModel)
         companyGraph(navController, viewModel)
-        /*composable(Screen.Home.route) {
-            val allProjects = viewModel.findAllProjects()
-            Home(
-                projects = allProjects,
-                listOf(), /*TODO: Persist maintenances*/
-                navigateToProject = { project ->
-                    navController.navigate(
-                        Screen.Projects.withArgs(
-                            project.id.toString()
-                        )
-                    )
-                },
-                bottomBar = { BottomNavigationBar(navController) }
-            )
-        }*/
     }
 }

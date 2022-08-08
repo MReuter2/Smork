@@ -21,35 +21,37 @@ fun NavGraphBuilder.companyGraph(navController: NavController, viewModel: MainVi
                         }
                     )
         ){
-            val company = viewModel.companyService.findCompany() ?: throw RuntimeException("Something went wrong")
+            val company = viewModel.companyService.findCompany()
             val owner = viewModel.ownerService.findAllOwner()
             val worker = viewModel.workerService.findAllWorker()
 
             val edit = remember{ mutableStateOf(it.arguments?.getBoolean("edit") ?: false) }
 
-            if(!edit.value) {
-                YourCompany(
-                    company = company,
-                    owner = owner,
-                    worker = worker,
-                    onCompanyEdit = { edit.value = true },
-                    onWorkerClick = { navController.navigate(Screen.Company.withArgs(it.id.toString())) },
-                    onOwnerClick = { navController.navigate(Screen.Company.withArgs(it.id.toString())) },
-                    onClickOwnerAddButton = { navController.navigate(Screen.Company.route + "/newOwner") },
-                    onClickWorkerAddButton = { navController.navigate(Screen.Company.route + "/newWorker") }
-                ) {
-                    BottomNavigationBar(navController = navController)
-                }
-            }else{
-                CompanyEditing(
-                    company = company,
-                    onCompanySave = {updatedCompany ->
-                        viewModel.companyService.insertCompany(fromCompany(updatedCompany))
-                        edit.value = false
-                    },
-                    backNavigation = { edit.value = false }
-                ) {
-                    BottomNavigationBar(navController = navController)
+            if(company != null){
+                if (!edit.value) {
+                    YourCompany(
+                        company = company,
+                        owner = owner,
+                        worker = worker,
+                        onCompanyEdit = { edit.value = true },
+                        onWorkerClick = { navController.navigate(Screen.Company.withArgs(it.id.toString())) },
+                        onOwnerClick = { navController.navigate(Screen.Company.withArgs(it.id.toString())) },
+                        onClickOwnerAddButton = { navController.navigate(Screen.Company.route + "/newOwner") },
+                        onClickWorkerAddButton = { navController.navigate(Screen.Company.route + "/newWorker") }
+                    ) {
+                        BottomNavigationBar(navController = navController)
+                    }
+                } else {
+                    CompanyEditing(
+                        company = company,
+                        onCompanySave = { updatedCompany ->
+                            viewModel.companyService.insertCompany(fromCompany(updatedCompany))
+                            edit.value = false
+                        },
+                        backNavigation = { edit.value = false }
+                    ) {
+                        BottomNavigationBar(navController = navController)
+                    }
                 }
             }
         }

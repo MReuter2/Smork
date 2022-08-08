@@ -24,52 +24,52 @@ fun NavGraphBuilder.projectGraph(
     ) {
         composable(Screen.Projects.route + "/projects") {
             val projects = viewModel.projectService.findAllProjects()
-                Projects(
-                    projects = projects,
-                    navigateToNewProject = { navController.navigate(Screen.Projects.route + "/newProject") },
-                    navigateToProject = { project ->
-                        navController.navigate(
-                            Screen.Projects.withArgs(
-                                project.id.toString()
-                            )
+            Projects(
+                projects = projects,
+                navigateToNewProject = { navController.navigate(Screen.Projects.route + "/newProject") },
+                navigateToProject = { project ->
+                    navController.navigate(
+                        Screen.Projects.withArgs(
+                            project.id.toString()
                         )
-                    }
-                ) { BottomNavigationBar(navController = navController) }
+                    )
+                }
+            ) { BottomNavigationBar(navController = navController) }
         }
         composable(Screen.Projects.route + "/newProject?clientID={clientID}") {
             var preselectedClient: Client? = null
             val allClients = viewModel.clientService.findAllClients()
-            if (it.arguments?.getString("clientID") != null && it.arguments?.getString("clientID") != null ) {
-                val clientId = it.arguments?.getString("clientID") ?: throw RuntimeException("Wrong")
+            if (it.arguments?.getString("clientID") != null && it.arguments?.getString("clientID") != null) {
+                val clientId =
+                    it.arguments?.getString("clientID") ?: throw RuntimeException("Wrong")
                 preselectedClient = viewModel.clientService.findClientById(clientId)
             }
-            if(allClients.isNotEmpty()){
-                NewProject(
-                    preselectedClient = preselectedClient,
-                    clients = allClients,
-                    onProjectSave = { newProject ->
-                        viewModel.projectService.insertProject(newProject)
-                        navController.navigate(Screen.Projects.withArgs(newProject.id.toString()))
-                    },
-                    bottomBar = { BottomNavigationBar(navController = navController) },
-                    backNavigation = { navController.popBackStack() }
-                )
-            }
+            NewProject(
+                preselectedClient = preselectedClient,
+                clients = allClients,
+                onProjectSave = { newProject ->
+                    viewModel.projectService.insertProject(newProject)
+                    navController.navigate(Screen.Projects.withArgs(newProject.id.toString()))
+                },
+                bottomBar = { BottomNavigationBar(navController = navController) },
+                backNavigation = { navController.popBackStack() }
+            )
         }
         composable(Screen.Projects.route + "/{projectID}?edit={edit}",
             arguments = listOf(
-                navArgument("edit"){
+                navArgument("edit") {
                     type = NavType.BoolType
                     defaultValue = false
                 }
             )
         ) {
-            val projectId = it.arguments?.getString("projectID") ?: throw RuntimeException("This is not an ID")
+            val projectId =
+                it.arguments?.getString("projectID") ?: throw RuntimeException("This is not an ID")
             val project = viewModel.projectService.findProjectById(projectId)
             val edit = remember { mutableStateOf(it.arguments?.getBoolean("edit") ?: false) }
             val allClients = viewModel.clientService.findAllClients()
 
-            if(project != null) {
+            if (project != null) {
                 if (!edit.value) {
                     Project(
                         project = project,
@@ -82,7 +82,7 @@ fun NavGraphBuilder.projectGraph(
                         }
                     )
                 } else {
-                    if(allClients.isNotEmpty()){
+                    if (allClients.isNotEmpty()) {
                         ProjectEditView(
                             project = project,
                             clients = allClients,

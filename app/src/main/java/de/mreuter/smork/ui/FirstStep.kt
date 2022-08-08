@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.mreuter.smork.backend.company.application.CompanyEntity
+import de.mreuter.smork.backend.company.domain.Company
 import de.mreuter.smork.ui.utils.BasicLazyColumn
 import de.mreuter.smork.ui.utils.BasicOutlinedTextField
 import de.mreuter.smork.ui.utils.PrimaryButton
@@ -16,7 +17,7 @@ import de.mreuter.smork.ui.theme.*
 
 @Composable
 fun CreateCompany(
-    onCompanySave: (CompanyEntity) -> Unit
+    onCompanySave: (Company) -> Unit
 ) {
     val nameValue = remember { mutableStateOf(String()) }
     val descriptionValue = remember { mutableStateOf(String()) }
@@ -50,8 +51,8 @@ fun CreateCompany(
         )
         Spacer(modifier = Modifier.padding(15.dp))
         PrimaryButton(label = "Create") {
-            val newCompanyEntity = CompanyEntity(name = nameValue.value, description = descriptionValue.value)
-            onCompanySave(newCompanyEntity)
+            val newCompany = Company(name = nameValue.value, description = descriptionValue.value)
+            onCompanySave(newCompany)
         }
 
         Spacer(modifier = Modifier.padding(150.dp))
@@ -61,7 +62,7 @@ fun CreateCompany(
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewJoinCompany() {
+fun PreviewCreateCompany() {
     SmorkTheme {
         CreateCompany{}
     }

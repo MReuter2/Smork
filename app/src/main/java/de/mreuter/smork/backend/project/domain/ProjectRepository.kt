@@ -6,7 +6,6 @@ import kotlinx.coroutines.*
 
 class ProjectRepository(private val projectDao: ProjectDao) {
     val searchResults = MutableLiveData<List<ProjectEntity>>(listOf())
-    val allProjects = projectDao.findAllProjects()
     val allProjectsWithClient = projectDao.findAllProjectsWithClient()
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 

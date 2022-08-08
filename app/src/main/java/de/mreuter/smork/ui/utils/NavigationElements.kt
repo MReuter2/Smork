@@ -86,11 +86,7 @@ fun TopBar(
 
 @Composable
 fun BottomNavigationBar(navController: NavController = rememberNavController()) {
-    val navItems = listOf(
-        Screen.Projects,
-        Screen.Company,
-        Screen.Clients
-    )
+    val navItems = listOf(Screen.Projects, Screen.Company, Screen.Clients)
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.primary,
         contentColor = MaterialTheme.colors.onPrimary
@@ -124,7 +120,8 @@ fun BottomNavigationBar(navController: NavController = rememberNavController()) 
                         }
                     }
                 },
-                label = { Text(text = screen.title, fontWeight = if(isSelected) FontWeight.Bold else FontWeight.Light)}
+                label = { Text(text = screen.title, fontWeight = if(isSelected) FontWeight.Bold
+                                                                            else FontWeight.Light)}
             )
         }
     }

@@ -110,7 +110,7 @@ fun CustomCalendarView(onDateSelected: (LocalDate) -> Unit) {
         },
         update = { view ->
             view.minDate = 0
-            view.maxDate = 20000000000000
+            view.maxDate = 80000
 
             view.setOnDateChangeListener { _, year, month, dayOfMonth ->
                 onDateSelected(
