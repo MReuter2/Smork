@@ -44,16 +44,18 @@ fun NavGraphBuilder.projectGraph(
                     it.arguments?.getString("clientID") ?: throw RuntimeException("Wrong")
                 preselectedClient = viewModel.clientService.findClientById(clientId)
             }
-            NewProject(
-                preselectedClient = preselectedClient,
-                clients = allClients,
-                onProjectSave = { newProject ->
-                    viewModel.projectService.insertProject(newProject)
-                    navController.navigate(Screen.Projects.withArgs(newProject.id.toString()))
-                },
-                bottomBar = { BottomNavigationBar(navController = navController) },
-                backNavigation = { navController.popBackStack() }
-            )
+            if(allClients.isNotEmpty()){
+                NewProject(
+                    preselectedClient = preselectedClient,
+                    clients = allClients,
+                    onProjectSave = { newProject ->
+                        viewModel.projectService.insertProject(newProject)
+                        navController.navigate(Screen.Projects.withArgs(newProject.id.toString()))
+                    },
+                    bottomBar = { BottomNavigationBar(navController = navController) },
+                    backNavigation = { navController.popBackStack() }
+                )
+            }
         }
         composable(Screen.Projects.route + "/{projectID}?edit={edit}",
             arguments = listOf(

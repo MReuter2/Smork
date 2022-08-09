@@ -23,7 +23,6 @@ val exampleClients = mutableListOf<Client>(
     ),
     Client(fullname = Fullname("Barack", "Obama")),
     Client(fullname = Fullname("Heidi", "Klum")),
-    Client(fullname = Fullname("Anthony", "Modeste")),
     Client(fullname = Fullname("Jonas", "Hector")),
     Client(fullname = Fullname("Olaf", "Scholz"))
 )

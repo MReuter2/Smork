@@ -64,7 +64,9 @@ fun ClientView(
                 ClickableListItem(it.name, if (it.isFinished()) "Finished" else "Active") {
                     navigateToProject(it)
                 }
-                BasicDivider()
+                if(projects.last() != it){
+                    BasicDivider()
+                }
             }
         }
     }
